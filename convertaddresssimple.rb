@@ -81,10 +81,12 @@ class Property  < Way
 
     @@abbr= Hash.new
     @@abbr['AL'] = 	'Alley'
+    @@abbr['PARK'] = 	'Park'
     @@abbr['AVE'] = 	'Avenue'
     @@abbr['DR'] = 	'Drive'
     @@abbr['PL'] = 	'Place'
     @@abbr['LN'] = 	'Lane'
+    @@abbr['TER'] = 	'Terrace'
     @@abbr['road'] = 'Road'
     @@abbr['RD'] = 'Road'
     @@abbr['BLVD'] = 'Boulevard'
@@ -600,6 +602,7 @@ addr:postcode
 addr:country
 addr:street
 addr:housenumber
+addr:suite
 }
     
     @@fields2 = %w{    ONAME MAILNAME     MAILADDRESS     MAILADDRESS2   WebLink PRC_Link PADDRESS    PADDRESS2 
@@ -676,6 +679,9 @@ LBCSFUNCTION     LBCSACTIVITY BLDGVAL     LDVAL     TOTVAL
       @attributes['addr:bearing']=@@bearing[housenumberorbearing]
     else
       @attributes['addr:housenumber'] =  housenumberorbearing      
+      bearing = paddressa.shift
+      @attributes['addr:bearing']=@@bearing[bearing]
+
     end
 
 #
@@ -683,7 +689,28 @@ LBCSFUNCTION     LBCSACTIVITY BLDGVAL     LDVAL     TOTVAL
     if @@abbr.include?(streettype)
       @attributes['addr:street_type']=@@abbr[streettype]
     else
-      abort("no street type" + streettype)
+
+      # now check if there is a # and put it in the suite
+      #
+      if (streettype.match("^\#.+"))        
+        @attributes['addr:suite']=streettype
+
+        ## try again
+        streettype = paddressa.pop
+        if @@abbr.include?(streettype)
+          @attributes['addr:street_type']=@@abbr[streettype]
+        else
+          warn @attributes
+          abort("no street type" + streettype )        
+        end
+
+      else
+        warn @attributes
+        abort("no street type" + streettype )
+        
+      end
+
+      
     end
 
     @attributes['addr:street_name']=paddressa.join(" ") # the rest
@@ -830,6 +857,8 @@ end
 
 
 g=GIS.new()
-g.process(['SW 11th ST' ,'SE 11th ST' ])
+#g.process(['SW 11th ST' ,'SE 11th ST' ])
+#g.process(['SW 21st TER' ,'SE 21st TER' ])
+g.process(['SW 22nd PARK' ])
 ios = IO.new STDOUT.fileno
 g.osmxml(ios)
