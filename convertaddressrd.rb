@@ -92,6 +92,7 @@ class Property  < Way
     @@abbr['PL'] = 	'Place'
     @@abbr['LN'] = 	'Lane'
     @@abbr['road'] = 'Road'
+    @@abbr['RD'] = 'Road'
     @@abbr['BLVD'] = 'Boulevard'
     @@abbr['CT'] = 	'Court'
     @@abbr['ST'] = 	'Street'
@@ -888,284 +889,43 @@ class GIS
     }
     ios.write ("</osm>\n")
   end
+
+  def process (roads, from , to )
+    found = 0
+    roads.flatten.each { 
+      |street|
+      gain =0
+      skip = 10
+      x = from
+      while x < to do
+        p= lookup( x.to_s + " "+ street )
+        if p.nil? 
+          if gain == 0 
+            warn "skipping " + skip.to_s + ":" + x.to_s + " found " + found.to_s + " gain " + gain.to_s
+            skip = skip + 10
+            x = x+ skip
+          else
+            # if we found anything, just skip one
+            x = x+ 1 
+          end
+        else
+          found = found + 1
+          gain = gain + 1
+          warn "found :" + x.to_s + " found " + found.to_s + " gain " + gain.to_s
+          x = x + 1
+        end
+      end
+    }
+  end
+  
 end
 
-found = 0
+
 g=GIS.new()
 
-[
-'NE Atchison AVE' ,
-'NE B AVE' ,
-'NE Belmont AVE' ,
-'NE Center AVE' ,
-'NE Chester AVE' ,
-'NE Doran AVE' ,
-'NE Florence AVE' ,
-'NE Forest AVE' ,
-'NE Freeman AVE' ,
-'NE Golden AVE' ,
-'NE Maple AVE' ,
-'NE Michigan AVE' ,
-'NE North AVE' ,
-'NE Oakland AVE' ,
-'NE Ohio AVE' ,
-'NE Riverside AVE' ,
-'NE Russ AVE' ,
-'NE Sardou AVE' ,
-'NE Scotland AVE' ,
-'NE Seward AVE' ,
-'NE Shuler AVE' ,
-'NE Twiss AVE' ,
-'NE Wabash AVE' ,
-'NE Wilson AVE' ,
-'NE Woodruff AVE' ,
-'North Kansas AVE' ,
-'NW Austin AVE' ,
-'NW Blaine AVE' ,
-'NW Broadmoor AVE' ,
-'NW Central AVE' ,
-'NW Courtland AVE' ,
-'NW Elmwood AVE' ,
-'NW Franklin AVE' ,
-'NW Grove AVE' ,
-'NW Hentig AVE' ,
-'NW Kendall AVE' ,
-'NW Knox AVE' ,
-'NW Lindenwood AVE' ,
-'NW Macvicar AVE' ,
-'NW Macvictor AVE' ,
-'NW Quinton AVE' ,
-'NW Vail AVE' ,
-'NW Walker AVE' ,
-'NW Western AVE' ,
-'NW Woodlawn AVE' ,
-'SE 10th AVE' ,
-'SE 6th AVE' ,
-'SE 8th AVE' ,
-'SE Bellview AVE' ,
-'SE California AVE' ,
-'SE Carnahan AVE' ,
-'SE Edison AVE' ,
-'SE Gilmore AVE' ,
-'SE Golden AVE' ,
-'SE Highland AVE' ,
-'SE Illinois AVE' ,
-'SE Indiana AVE' ,
-'SE Maryland AVE' ,
-'SE Powell AVE' ,
-'SE Republican AVE' ,
-'SE Sherman AVE' ,
-'SE Stella AVE' ,
-'SE Wear AVE' ,
-'SE Winfield AVE' ,
-'SE Woodland AVE' ,
-'SE Yale AVE' ,
-'S Kansas AVE' ,
-'SW 10th AVE' ,
-'SW 1st AVE' ,
-'SW 6th AVE' ,
-'SW 8th AVE' ,
-'SW Arnold AVE' ,
-'SW Atwood AVE' ,
-'SW Billard AVE' ,
-'SW Boswell AVE' ,
-'SW Broadmoor AVE' ,
-'SW Cambridge AVE' ,
-'SW Campbell AVE' ,
-'SW College AVE' ,
-'SW Collins AVE' ,
-'SW Courtland AVE' ,
-'SW Douthitt AVE' ,
-'SW Edgewood AVE' ,
-'SW Elmwood AVE' ,
-'SW Emma AVE' ,
-'SW Franklin AVE' ,
-'SW Frazier AVE' ,
-'SW Garfield AVE' ,
-'SW Grandview AVE' ,
-'SW Greenwood AVE' ,
-'SW Hedgewood AVE' ,
-'SW High AVE' ,
-'SW Jewell AVE' ,
-'SW Kendall AVE' ,
-'SW Knox AVE' ,
-'SW Lindenwood AVE' ,
-'SW Macvicar AVE' ,
-'SW Marshall AVE' ,
-'SW Medford AVE' ,
-'SW Mission AVE' ,
-'SW Munson AVE' ,
-'SW Oakley AVE' ,
-'SW Plass AVE' ,
-'SW Quinton AVE' ,
-'SW Randolph AVE' ,
-'SW Seabrook AVE' ,
-'SW Stone AVE' ,
-'SW Summit AVE' ,
-'SW Vesper AVE' ,
-'SW Warren AVE' ,
-'SW Washburn AVE' ,
-'SW Watson AVE' ,
-'SW Wayne AVE' ,
-'SW Webster AVE' ,
-'SW Western AVE' ,
-'SW Willow AVE' ,
-'SW Woodlawn AVE' ,
-'SW Woodward AVE' ,
-'SE 2nd ST' ,
-'SE 3rd ST' ,
-'SE 5th ST' ,
-'SE 7th ST' ,
-'SE 8th ST' ,
-'SE 9th ST' ,
-'SE Adams ST' ,
-'SE Alkire ST' ,
-'SE Brady ST' ,
-'SE Branner ST' ,
-'SE Brock ST' ,
-'SE Burr ST' ,
-'SE Chandler ST' ,
-'SE Chestnut ST' ,
-'SE Davies ST' ,
-'SE Elm ST' ,
-'SE Gabler ST' ,
-'SE Gray ST' ,
-'SE Handcock ST' ,
-'SE High ST' ,
-'SE Holiday ST' ,
-'SE Jefferson ST' ,
-'SE Klein ST' ,
-'SE Lafayette ST' ,
-'SE Lake ST' ,
-'SE Lamar ST' ,
-'SE Lawrence ST' ,
-'SE Leland ST' ,
-'SE Liberty ST' ,
-'SE Lime ST' ,
-'SE Locust ST' ,
-'SE Long ST' ,
-'SE Madison ST' ,
-'SE Market ST' ,
-'SE Monroe ST' ,
-'SE Overton ST' ,
-'SE Powell ST' ,
-'SE Quincy ST' ,
-'SE Swygart ST' ,
-'SE Tefft ST' ,
-'SE Vine ST' ,
-'SE Washington ST' ,
-'SE William ST' ,
-'SE Wood ST' ,
-'SW 11th ST' ,
-'SW 12th ST' ,
-'SW 13th ST' ,
-'SW 14th ST' ,
-'SW 15th ST' ,
-'SW 16th ST' ,
-'SW 17th ST' ,
-'SW 18th ST' ,
-'SW 2nd ST' ,
-'SW 3rd ST' ,
-'SW 4th ST' ,
-'SW 5th ST' ,
-'SW 7th ST' ,
-'SW 9th ST' ,
-'SW Arlington ST' ,
-'SW Buchanan ST' ,
-'SW Byron ST' ,
-'SW Cherokee ST' ,
-'SW Clay ST' ,
-'SW Dorr ST' ,
-'SW Duane ST' ,
-'SW Fillmore ST' ,
-'SW Front ST' ,
-'SW Gresser ST' ,
-'SW Harrison ST' ,
-'SW Horne ST' ,
-'SW Huntoon ST' ,
-'SW Jackson ST' ,
-'SW Jane ST' ,
-'SW Lane ST' ,
-'SW Lincoln ST' ,
-'SW Mulvane ST' ,
-'SW Orchard ST' ,
-'SW Orleans ST' ,
-'SW Parkview ST' ,
-'SW Perry ST' ,
-'SW Polk ST' ,
-'SW Roosevelt ST' ,
-'SW Saline ST' ,
-'SW Stafford ST' ,
-'SW Taylor ST' ,
-'SW Throop ST' ,
-'SW Tyler ST' ,
-'SW Western ST' ,
-'Northeast Porubsky DR' ,
-'Northwest Moundview DR' ,
-'Northwest Shawna DR' ,
-'Northwest the DR' ,
-'Southwest Blaisdell DR' ,
-'Southwest Emland DR' ,
-'Southwest Lakeside DR' ,
-'Southwest Reynolds DR' ,
-'Southwest Sena DR' ,
-'Southwest West DR' ,
-'Southwest West DR' 
-] .flatten.each { 
-
-#'SW Mac Vicar AVE',
-#'SW Van Buren ST' ,
-# 'Waddell ST' ,
-# 'Sports Center Dr',
-#'Northwest Water Works DR' ,
-#'Tuffy Kellogg DR' ,
-#'Haber Korn DR' ,
-#'Northeast Sewer Plant DR' ,
-#'Outer Circle DR' ,
-#'Southeast Circle DR South' ,
-#'Southwest East Circle DR' ,
-#'Southwest East Circle DR South' ,
-#'Center Building DR' ,
-#'SW Central Park AVE' ,
-# Southeast Circle DR North' ,
-# 'Southeast Circle DR South' ,
-# 'Southwest East Circle DR South' ,
-#'Southwest Munn Memorial DR' ,
-#'Southwest the DR' ,
-#'Northwest the DR' ,
-#'Northwest Water Works DR' ,
-#'Outer Circle DR' ,
-#'Southeast Circle DR South' ,
-#'Expocentre DR' ,
-
-
-  |street|
-  #1000.times.map{ 1+Random.rand(3000) }
-  gain =0
-  skip = 10
-  x = 1
-  while x < 100 do
-    p=g.lookup( x.to_s + " "+ street )
-#    warn "check:" + x.to_s + " found " + found.to_s + " gain " + gain.to_s
-    if p.nil? 
-      if gain == 0 
-        warn "skipping " + skip.to_s + ":" + x.to_s + " found " + found.to_s + " gain " + gain.to_s
-        skip = skip + 10
-        x = x+ skip
-      else
-        # if we found anything, just skip one
-        x = x+ 1 
-      end
-    else
-      found = found + 1
-      gain = gain + 1
-      warn "found :" + x.to_s + " found " + found.to_s + " gain " + gain.to_s
-      x = x + 1
-
-    end
-
-  end
-}
+#g.process(['SW Wanamaker RD' ,'SE Wanamaker RD' ,'S Wanamaker RD' ,] ,1,2000)
+g.process(['NW Topeka BLVD' ,'SW Topeka BLVD' ] ,1,12000)
+#1201 SW Topeka Blvd,
 
 ios = IO.new STDOUT.fileno
 g.osmxml(ios)

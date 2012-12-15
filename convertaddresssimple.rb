@@ -15,35 +15,29 @@ class BaseNode
     @attributes=Hash.new
     @@count -= 1
     @id=@@count
-
   end
 
   def emitkv (ios, k, v) 
-    if (! v.nil? )
-      k.sub(".","_")
-      k=k.downcase
-      ios.write "<tag k=\"#{k}\" v=\"#{v}\"/>\n"   
-    end
+    k.sub(".","_")
+    k=k.downcase
+    ios.write "<tag k=\"#{k}\" v=\"#{v}\"/>\n"   
   end
+  
 
   def osmxml (ios)
-
     @attributes.each { |k, v|  
-#      v2 = CGI::escape(v)
       osmxl(ios,k,v)
     }
   end
-
+  
 end
 
 class Node  < BaseNode
 
   def osmxml (ios)
-
     ios.write ("<node id=\"#{@id}\" lat=\"#{@lat}\"  lon=\"#{@lon}\" >\n")
     super
     ios.write ("</node>\n")
-
   end
 
   def osmxmlref (ios)
@@ -92,76 +86,11 @@ class Property  < Way
     @@abbr['PL'] = 	'Place'
     @@abbr['LN'] = 	'Lane'
     @@abbr['road'] = 'Road'
+    @@abbr['RD'] = 'Road'
     @@abbr['BLVD'] = 'Boulevard'
     @@abbr['CT'] = 	'Court'
     @@abbr['ST'] = 	'Street'
     @@abbr['STR'] = 	'Street'
-#    @@abbr['PARK'] = 	'Park'
-
-# ## residential
-# "Garden apartment complex (1"
-# "Apartment unit (single family "
-# "Child day care / learning center"
-# "Dwelling converted to apartments"
-# "Fourplex"
-# "Manufactured home site"
-# "Residential highest and best use"
-# "Duplex"
-# "Single family residence (detached)"
-
-# #farming
-# "Farming / ranch operation (with improvements)"
-
-# "Church / place of worship"
-# "Charitable Institution"
-# "Drive"
-# "Education / public admin / health care / other institutions"
-# "Fire and rescue"
-# "Full"
-
-# ##
-# "Government offices (legislative and executive functions)"
-# "High"
-# "Institutional highest and best use"
-# "Local transit systems "
-# "Medical / dental office or clinic"
-# "Mini"
-
-# "Recreational / cultural / entertainment highest and best use"
-
-# "Transportation / communication / information / utilities"
-
-
-# #industrial 
-# "Steel fabrication"
-# "Salvage yard / Recycle center"
-# "Meat products mfg"
-
-# # commercial
-# "Service garage / paint shop / detailing"
-# "Strip office center"
-# "Strip store center"
-# "Warehouse"
-# "Warehouse distribution / storage facility"
-# "General office buildings (1"
-# "General office buildings (5+ stories)"
-# "Grocery store / supermarket"
-# "Retail store"
-# "Cinema complex (2 or more screens)"
-# "Commercial highest and best use"
-# "Commercial printing"
-# "Downtown row store"
-# "General sales or services (nec)"
-# "Veterinary office / clinic"    
-
-# #park
-# "Ornamental park"
-
-# # sports
-# "Bowling alley"
-
-# # entertainment
-# "General recreation park"
 
     @@codesl= Hash.new
     @@codesl['1000']='residential'
@@ -694,9 +623,6 @@ LBCSFUNCTION     LBCSACTIVITY BLDGVAL     LDVAL     TOTVAL
   def initialize()
     super
     Property.initfields
-
-
-
   end
 
   def kv (k,v)
@@ -722,7 +648,9 @@ LBCSFUNCTION     LBCSACTIVITY BLDGVAL     LDVAL     TOTVAL
     @@fields.each {|x| 
       k=x
       v=@attributes[k]
-      emitkv ios, k, v
+      if (!v.nil?)
+        emitkv ios, k, v
+      end
     }
     @nodes.each { |x| x.osmxmlref(ios) }
     ios.write ("</way>\n")
@@ -739,22 +667,26 @@ LBCSFUNCTION     LBCSACTIVITY BLDGVAL     LDVAL     TOTVAL
     
     paddressa=paddress.split(%r{\s})
     paddressa2=paddress2.split(%r{\s})
-    @attributes['addr:housenumber']=paddressa[0]
 
-    # bearing
-    if @@bearing.include?(paddressa[1])
-      @attributes['addr:bearing']=@@bearing[paddressa[1]]
+    housenumberorbearing = paddressa.shift
+
+    if @@bearing.include?(housenumberorbearing)
+      # no house number
+      @attributes['addr:housenumber']=nil
+      @attributes['addr:bearing']=@@bearing[housenumberorbearing]
     else
-      abort("no bearing type")
+      @attributes['addr:housenumber'] =  housenumberorbearing      
     end
 
-    @attributes['addr:street_name']=paddressa[2]        
-
-    if @@abbr.include?(paddressa[3])
-      @attributes['addr:street_type']=@@abbr[paddressa[3]]
+#
+    streettype = paddressa.pop
+    if @@abbr.include?(streettype)
+      @attributes['addr:street_type']=@@abbr[streettype]
     else
-      abort("no street type" + paddressa[3])
+      abort("no street type" + streettype)
     end
+
+    @attributes['addr:street_name']=paddressa.join(" ") # the rest
 
     @attributes['addr:full']=     [@attributes['addr:housenumber'] , 
                                    @attributes['addr:bearing']     ,
@@ -781,18 +713,9 @@ LBCSFUNCTION     LBCSACTIVITY BLDGVAL     LDVAL     TOTVAL
     @attributes['lbcs:activity:code']=code[0]
     @attributes['lbcs:activity:name']=code[1]
     @attributes['lbcs:function:code']=function[0]
+    function[1]=function[1].sub('&','and')
     @attributes['lbcs:function:name']=function[1]
     
-
-#    p paddressa,paddress2a
-#    addr:street_bearing
-#    number   = paddress./^(\d+\W|[a-z]+)?(\d+)([a-z]?)\b/io,  
-#    :street   => /(?:\b(?:\d+\w*|[a-z'-]+)\s*)+/io, 
-#    :city     => /(?:\b[a-z'-]+\s*)+/io,  
-#    :state    => Regexp.new(State.regexp.source + "\s*$", Regexp::IGNORECASE),  
-#    :zip      => /(\d{5})(?:-\d{4})?\s*$/o,  
-#    :at       => /\s(at|@|and|&)\s/io,  
-#    :po_box => /\b[P|p]*(OST|ost)*\.*\s*[O|o|0]*(ffice|FFICE)*\.*\s*[B|b][O|o|0][X|x]\b/  
   end 
 end
 
@@ -825,15 +748,38 @@ class GIS
   def get(url)
   end
 
+  def process_prop(inprop)
+    
+    fields3 = Property::getfields()
+    data= inprop['attributes']
+    p = Property.new()
+    fields3.each { |x|
+      
+      if data.include?(x)
+        val = data[x]
+        k = x.downcase
+        k.sub(".","_")
+        k = "snco.us:" + k         
+        p.kv( k, val.to_s)
+      else
+        abort ("missing" + x)
+      end  
+    }
+    geo= inprop['geometry']['rings'][0]
+    geo.each { |x| p.addpoint(x[1],x[0]) }
+    p.closeway
+    p.cleanup
+    @properties.push(p)
+
+  end
+
   def lookup(street) 
     if @properties.include?(street)
       return @properties[street]
     end
     qry=URI::encode(street)
     srlatlong=4326
-
     fields3 = Property::getfields()
-
     fieldstr = CGI::escape(fields3.join(','))
     url = "http://gis.snco.us/ArcGIS/rest/services/Parcels/MapServer/0/query" \
     "?outFields=" + fieldstr +
@@ -846,37 +792,20 @@ class GIS
 
     json = JSON.parse(html)
 
-    p = Property.new()
+
     if json 
       if json.include?('features')
-        if (json['features'][0].nil? )
-#          warn "nothing for " + street + "\n"
-          return nil
-        else
-          warn "found : " + street + "\n"  
-        end
-        data= json['features'][0]['attributes']
-        fields3.each { |x|
-
-          if data.include?(x)
-            val = data[x]
-            k = x.downcase
-            k.sub(".","_")
-            k = "snco.us:" + k 
-
-            p.kv( k, val.to_s)
-          else
-            abort ("missing" + x)
-          end  
+        json['features'].each{ |inprop|
+#          warn "found : "
+#          p inprop
+          process_prop(inprop)
         }
-
-        geo= json['features'][0]['geometry']['rings'][0]
-        geo.each { |x| p.addpoint(x[1],x[0]) }
-        p.closeway
+      else
+        warn "nothing for " + street + "\n"
+        return nil
       end
     end
-    @properties.push(p)
-    p.cleanup
+
     return p
   end
 
@@ -888,284 +817,19 @@ class GIS
     }
     ios.write ("</osm>\n")
   end
+
+  def process (roads )
+    found = 0
+    roads.flatten.each { 
+      |street|
+      p= lookup( street )
+    }
+  end
+  
 end
 
-found = 0
+
 g=GIS.new()
-
-[
-'NE Atchison AVE' ,
-'NE B AVE' ,
-'NE Belmont AVE' ,
-'NE Center AVE' ,
-'NE Chester AVE' ,
-'NE Doran AVE' ,
-'NE Florence AVE' ,
-'NE Forest AVE' ,
-'NE Freeman AVE' ,
-'NE Golden AVE' ,
-'NE Maple AVE' ,
-'NE Michigan AVE' ,
-'NE North AVE' ,
-'NE Oakland AVE' ,
-'NE Ohio AVE' ,
-'NE Riverside AVE' ,
-'NE Russ AVE' ,
-'NE Sardou AVE' ,
-'NE Scotland AVE' ,
-'NE Seward AVE' ,
-'NE Shuler AVE' ,
-'NE Twiss AVE' ,
-'NE Wabash AVE' ,
-'NE Wilson AVE' ,
-'NE Woodruff AVE' ,
-'North Kansas AVE' ,
-'NW Austin AVE' ,
-'NW Blaine AVE' ,
-'NW Broadmoor AVE' ,
-'NW Central AVE' ,
-'NW Courtland AVE' ,
-'NW Elmwood AVE' ,
-'NW Franklin AVE' ,
-'NW Grove AVE' ,
-'NW Hentig AVE' ,
-'NW Kendall AVE' ,
-'NW Knox AVE' ,
-'NW Lindenwood AVE' ,
-'NW Macvicar AVE' ,
-'NW Macvictor AVE' ,
-'NW Quinton AVE' ,
-'NW Vail AVE' ,
-'NW Walker AVE' ,
-'NW Western AVE' ,
-'NW Woodlawn AVE' ,
-'SE 10th AVE' ,
-'SE 6th AVE' ,
-'SE 8th AVE' ,
-'SE Bellview AVE' ,
-'SE California AVE' ,
-'SE Carnahan AVE' ,
-'SE Edison AVE' ,
-'SE Gilmore AVE' ,
-'SE Golden AVE' ,
-'SE Highland AVE' ,
-'SE Illinois AVE' ,
-'SE Indiana AVE' ,
-'SE Maryland AVE' ,
-'SE Powell AVE' ,
-'SE Republican AVE' ,
-'SE Sherman AVE' ,
-'SE Stella AVE' ,
-'SE Wear AVE' ,
-'SE Winfield AVE' ,
-'SE Woodland AVE' ,
-'SE Yale AVE' ,
-'S Kansas AVE' ,
-'SW 10th AVE' ,
-'SW 1st AVE' ,
-'SW 6th AVE' ,
-'SW 8th AVE' ,
-'SW Arnold AVE' ,
-'SW Atwood AVE' ,
-'SW Billard AVE' ,
-'SW Boswell AVE' ,
-'SW Broadmoor AVE' ,
-'SW Cambridge AVE' ,
-'SW Campbell AVE' ,
-'SW College AVE' ,
-'SW Collins AVE' ,
-'SW Courtland AVE' ,
-'SW Douthitt AVE' ,
-'SW Edgewood AVE' ,
-'SW Elmwood AVE' ,
-'SW Emma AVE' ,
-'SW Franklin AVE' ,
-'SW Frazier AVE' ,
-'SW Garfield AVE' ,
-'SW Grandview AVE' ,
-'SW Greenwood AVE' ,
-'SW Hedgewood AVE' ,
-'SW High AVE' ,
-'SW Jewell AVE' ,
-'SW Kendall AVE' ,
-'SW Knox AVE' ,
-'SW Lindenwood AVE' ,
-'SW Macvicar AVE' ,
-'SW Marshall AVE' ,
-'SW Medford AVE' ,
-'SW Mission AVE' ,
-'SW Munson AVE' ,
-'SW Oakley AVE' ,
-'SW Plass AVE' ,
-'SW Quinton AVE' ,
-'SW Randolph AVE' ,
-'SW Seabrook AVE' ,
-'SW Stone AVE' ,
-'SW Summit AVE' ,
-'SW Vesper AVE' ,
-'SW Warren AVE' ,
-'SW Washburn AVE' ,
-'SW Watson AVE' ,
-'SW Wayne AVE' ,
-'SW Webster AVE' ,
-'SW Western AVE' ,
-'SW Willow AVE' ,
-'SW Woodlawn AVE' ,
-'SW Woodward AVE' ,
-'SE 2nd ST' ,
-'SE 3rd ST' ,
-'SE 5th ST' ,
-'SE 7th ST' ,
-'SE 8th ST' ,
-'SE 9th ST' ,
-'SE Adams ST' ,
-'SE Alkire ST' ,
-'SE Brady ST' ,
-'SE Branner ST' ,
-'SE Brock ST' ,
-'SE Burr ST' ,
-'SE Chandler ST' ,
-'SE Chestnut ST' ,
-'SE Davies ST' ,
-'SE Elm ST' ,
-'SE Gabler ST' ,
-'SE Gray ST' ,
-'SE Handcock ST' ,
-'SE High ST' ,
-'SE Holiday ST' ,
-'SE Jefferson ST' ,
-'SE Klein ST' ,
-'SE Lafayette ST' ,
-'SE Lake ST' ,
-'SE Lamar ST' ,
-'SE Lawrence ST' ,
-'SE Leland ST' ,
-'SE Liberty ST' ,
-'SE Lime ST' ,
-'SE Locust ST' ,
-'SE Long ST' ,
-'SE Madison ST' ,
-'SE Market ST' ,
-'SE Monroe ST' ,
-'SE Overton ST' ,
-'SE Powell ST' ,
-'SE Quincy ST' ,
-'SE Swygart ST' ,
-'SE Tefft ST' ,
-'SE Vine ST' ,
-'SE Washington ST' ,
-'SE William ST' ,
-'SE Wood ST' ,
-'SW 11th ST' ,
-'SW 12th ST' ,
-'SW 13th ST' ,
-'SW 14th ST' ,
-'SW 15th ST' ,
-'SW 16th ST' ,
-'SW 17th ST' ,
-'SW 18th ST' ,
-'SW 2nd ST' ,
-'SW 3rd ST' ,
-'SW 4th ST' ,
-'SW 5th ST' ,
-'SW 7th ST' ,
-'SW 9th ST' ,
-'SW Arlington ST' ,
-'SW Buchanan ST' ,
-'SW Byron ST' ,
-'SW Cherokee ST' ,
-'SW Clay ST' ,
-'SW Dorr ST' ,
-'SW Duane ST' ,
-'SW Fillmore ST' ,
-'SW Front ST' ,
-'SW Gresser ST' ,
-'SW Harrison ST' ,
-'SW Horne ST' ,
-'SW Huntoon ST' ,
-'SW Jackson ST' ,
-'SW Jane ST' ,
-'SW Lane ST' ,
-'SW Lincoln ST' ,
-'SW Mulvane ST' ,
-'SW Orchard ST' ,
-'SW Orleans ST' ,
-'SW Parkview ST' ,
-'SW Perry ST' ,
-'SW Polk ST' ,
-'SW Roosevelt ST' ,
-'SW Saline ST' ,
-'SW Stafford ST' ,
-'SW Taylor ST' ,
-'SW Throop ST' ,
-'SW Tyler ST' ,
-'SW Western ST' ,
-'Northeast Porubsky DR' ,
-'Northwest Moundview DR' ,
-'Northwest Shawna DR' ,
-'Northwest the DR' ,
-'Southwest Blaisdell DR' ,
-'Southwest Emland DR' ,
-'Southwest Lakeside DR' ,
-'Southwest Reynolds DR' ,
-'Southwest Sena DR' ,
-'Southwest West DR' ,
-'Southwest West DR' 
-] .flatten.each { 
-
-#'SW Mac Vicar AVE',
-#'SW Van Buren ST' ,
-# 'Waddell ST' ,
-# 'Sports Center Dr',
-#'Northwest Water Works DR' ,
-#'Tuffy Kellogg DR' ,
-#'Haber Korn DR' ,
-#'Northeast Sewer Plant DR' ,
-#'Outer Circle DR' ,
-#'Southeast Circle DR South' ,
-#'Southwest East Circle DR' ,
-#'Southwest East Circle DR South' ,
-#'Center Building DR' ,
-#'SW Central Park AVE' ,
-# Southeast Circle DR North' ,
-# 'Southeast Circle DR South' ,
-# 'Southwest East Circle DR South' ,
-#'Southwest Munn Memorial DR' ,
-#'Southwest the DR' ,
-#'Northwest the DR' ,
-#'Northwest Water Works DR' ,
-#'Outer Circle DR' ,
-#'Southeast Circle DR South' ,
-#'Expocentre DR' ,
-
-
-  |street|
-  #1000.times.map{ 1+Random.rand(3000) }
-  gain =0
-  skip = 10
-  x = 1
-  while x < 100 do
-    p=g.lookup( x.to_s + " "+ street )
-#    warn "check:" + x.to_s + " found " + found.to_s + " gain " + gain.to_s
-    if p.nil? 
-      if gain == 0 
-        warn "skipping " + skip.to_s + ":" + x.to_s + " found " + found.to_s + " gain " + gain.to_s
-        skip = skip + 10
-        x = x+ skip
-      else
-        # if we found anything, just skip one
-        x = x+ 1 
-      end
-    else
-      found = found + 1
-      gain = gain + 1
-      warn "found :" + x.to_s + " found " + found.to_s + " gain " + gain.to_s
-      x = x + 1
-
-    end
-
-  end
-}
-
+g.process(['SW 11th ST' ,'SE 11th ST' ])
 ios = IO.new STDOUT.fileno
 g.osmxml(ios)
