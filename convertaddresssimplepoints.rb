@@ -3,80 +3,17 @@ require 'json'
 require 'cgi'
 require 'open-uri'
 
+class LandUse
+  def church (obj)
+    p obj
+    abort "todo"
+  end
+
+end
+
 class BaseNode 
-
-  @@count=0
-
-  def attributes
-    @attributes
-  end 
-
-  def initialize()
-    @attributes=Hash.new
-    @@count -= 1
-    @id=@@count
-  end
-
-  def emitkv (ios, k, v) 
-    k.sub(".","_")
-    k=k.downcase
-    ios.write "<tag k=\"#{k}\" v=\"#{v}\"/>\n"   
-  end
   
 
-  def osmxml (ios)
-    @attributes.each { |k, v|  
-      osmxl(ios,k,v)
-    }
-  end
-  
-end
-
-class Node  < BaseNode
-
-  def osmxml (ios)
-    ios.write ("<node id=\"#{@id}\" lat=\"#{@lat}\"  lon=\"#{@lon}\" >\n")
-    super
-    ios.write ("</node>\n")
-  end
-
-  def osmxmlref (ios)
-    ios.write ("<nd ref=\"#{@id}\" />\n")
-  end
-
-  def initialize(lat,lon)
-    super()
-    @lat=lat
-    @lon=lon
-  end
-
-  def id
-    @id
-  end
-
-  def lat
-    @lat
-  end
-
-  def lon  
-    @lon
-  end
-end
-
-class Way  < BaseNode
-
-  def initialize()
-    super
-    @nodes=Array.new
-  end
-
-  def nodes
-    @nodes
-  end
-end
-
-class Property  < Way
- 
   def self.initfields ()
 
     @@abbr= Hash.new
@@ -96,15 +33,31 @@ class Property  < Way
 
     @@codesl= Hash.new
     @@codesl['1000']='residential'
+    @@codesl['2000']='commercial' # Shopping, business, trade activities
+    @@codesl['4000']='commercial' # Shopping, business, trade activities
     @@codesl['1100']='residential'
     @@codesl['8100']='farmland'
+
+    @@proto= LandUse.new
+
+    @@fcodesl= Hash.new
+    @@fcodesl['6610']= lambda {|o|  o.attributes['amenity'] = "place_of_worship"    }
+    @@fcodesl['6121']= lambda {|o|  o.attributes['amenity'] = "school" }
+    @@fcodesl['4238']= lambda {|o|    
+      o.attributes['manmade'] = 'tower'
+      o.attributes['tower'] = 'communcations'
+    }
+
+    @@fcodesl['2128']= lambda {|o|       o.attributes['shop'] = 'variety store'    }
+    @@fcodesl['9050']= lambda {|o|       o.attributes['landuse'] = 'farmland'    }
+    @@fcodesl['6123']= lambda {|o|       o.attributes['amenity'] = "school" }
+      
 
     # from http://aims.jocogov.org/OtherResources/luval.aspx?n=LBCS%20Activity&t=lulbcsactivity&f1=code&f2=description
     #LBCSACTIVITY
     @@codes= Hash.new
     @@codes['1000']='Residential activities'
     @@codes['1100']='Household activities'
-
     @@codes['1200']='Transient living'
     @@codes['1300']='Institutional living'
     @@codes['1400']='Residential Support'
@@ -209,8 +162,6 @@ class Property  < Way
     @@codes['7460']='Water-skiing'
     @@codes['8000']='Natural resources-related activities'
     @@codes['8100']='Farming, plowing, tilling, harvesting, or related activities'
-
-
     @@codes['8200']='Livestock related activities'
     @@codes['8300']='Pasturing, grazing, etc.'
     @@codes['8400']='Logging'
@@ -220,7 +171,6 @@ class Property  < Way
     @@codes['9000']='No human activity'
     @@codes['9200']='Unclassifiable activity'
     @@codes['9300']='Subsurface activity'
-
 
     # from www.ksrevenue.org/pdf/dir11-044.pdf
     #LBCSFUNCTION     
@@ -596,6 +546,8 @@ lbcs:activity:code
 lbcs:activity:name
 lbcs:function:code
 lbcs:function:name
+amenity
+landuse
 addr:city
 addr:state
 addr:postcode
@@ -628,6 +580,124 @@ LBCSFUNCTION     LBCSACTIVITY BLDGVAL     LDVAL     TOTVAL
     Property.initfields
   end
 
+  @@count=0
+
+  def attributes
+    @attributes
+  end 
+
+  def setattributes(v)
+    @attributes=v
+  end 
+
+  def initialize()
+    @attributes=Hash.new
+    @@count -= 1
+    @id=@@count
+  end
+
+  def emitkv (ios, k, v) 
+    k.sub(".","_")
+    k=k.downcase
+    ios.write "<tag k=\"#{k}\" v=\"#{v}\"/>\n"   
+  end
+  
+
+  def osmxml (ios)
+
+    @@fields.each {|x| 
+      k=x
+      v=@attributes[k]
+      if (!v.nil?)
+        emitkv ios, k, v
+      end
+    }
+
+#    @attributes.each { |k, v|  
+#      emitkv(ios,k,v)
+#    }
+  end
+  
+end
+
+class Node  < BaseNode
+
+  def osmxml (ios)
+    ios.write ("<node id=\"#{@id}\" lat=\"#{@lat}\"  lon=\"#{@lon}\" >\n")
+    super
+    ios.write ("</node>\n")
+  end
+
+  def osmxmlref (ios)
+    ios.write ("<nd ref=\"#{@id}\" />\n")
+  end
+
+  def landuse 
+    # now determine the landuse of the node
+    if ! @@codesl.include?( @attributes['lbcs:activity:code'])
+
+
+      if @@fcodesl.include?( @attributes['lbcs:function:code'])
+        
+        @@fcodesl[@attributes['lbcs:function:code']][self]
+
+      else
+        #      p @attributes
+        abort "missing " + 
+"activity:" +
+          @attributes['lbcs:activity:code'] + 
+          @attributes['lbcs:activity:name'] +
+"function:" +
+          @attributes['lbcs:function:code'] +      
+          @attributes['lbcs:function:name']        
+      end
+
+
+    end
+  end
+
+  def church 
+o
+  end
+
+  def school
+
+  end
+
+  def initialize(lat,lon)
+    super()
+    @lat=lat
+    @lon=lon
+  end
+
+  def id
+    @id
+  end
+
+  def lat
+    @lat
+  end
+
+  def lon  
+    @lon
+  end
+end
+
+class Way  < BaseNode
+
+  def initialize()
+    super
+    @nodes=Array.new
+  end
+
+  def nodes
+    @nodes
+  end
+end
+
+class Property  < Way
+ 
+
   def kv (k,v)
 #    p "setting" << k << ":"<< v
     @attributes[k]=v
@@ -649,16 +719,24 @@ LBCSFUNCTION     LBCSACTIVITY BLDGVAL     LDVAL     TOTVAL
       #abort "empty"
     end
   end
-  
-  def osmxml (ios)
-    @nodes.each { |x| 
-#      p x
-      x.osmxml(ios) 
-    }
-    ios.write ("<way id=\"#{@id}\" >\n")
 
-#    p @attributes.keys
+  def midpoint 
+    sumlat = 0
+    sumlon = 0
+#    arr.inject{ |sum, el| sum + el }.to_f / @nodes.size
+    @nodes.each { |x| 
+      sumlat += x.lat
+      sumlon += x.lon
+    }
+    @middle=  Node.new(sumlat/@nodes.size,sumlon/@nodes.size)    
+
+    @middle.setattributes( @attributes)
+    @middle.landuse
     
+  end
+
+  def osmxml (ios)
+   
     @@fields.each {|x| 
       k=x
       v=@attributes[k]
@@ -666,8 +744,16 @@ LBCSFUNCTION     LBCSACTIVITY BLDGVAL     LDVAL     TOTVAL
         emitkv ios, k, v
       end
     }
-    @nodes.each { |x| x.osmxmlref(ios) }
-    ios.write ("</way>\n")
+
+    self.midpoint # calc the midpoint
+    if (@middle.nil?)
+      abort "midpoint not set"
+      else
+      
+      @middle.osmxml(ios)  #emit it
+    end
+
+
   end
 
   def cleanup
@@ -881,6 +967,7 @@ g=GIS.new()
 # g.process(['SW Wanamaker Dr'])
 # g.process(['SW Wanamaker RD'])
 # g.process(['S Kansas Ave','N Kansas Ave'])
-g.process(['SW TOPEKA BLVD'])
-f = File.open("SWTopekaBvld.osm", 'w') # {|f| f.write(html) }
+#g.process(['SW TOPEKA BLVD'])
+g.process(['NW Rochester Rd'])
+f = File.open("Rochester.osm", 'w') # {|f| f.write(html) }
 g.osmxml(f)
