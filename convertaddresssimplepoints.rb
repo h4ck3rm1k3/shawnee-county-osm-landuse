@@ -28,30 +28,514 @@ class BaseNode
     @@abbr['RD'] = 'Road'
     @@abbr['BLVD'] = 'Boulevard'
     @@abbr['CT'] = 	'Court'
+    @@abbr['CIR'] = 	'Circle'
     @@abbr['ST'] = 	'Street'
     @@abbr['STR'] = 	'Street'
 
     @@codesl= Hash.new
-    @@codesl['1000']='residential'
-    @@codesl['2000']='commercial' # Shopping, business, trade activities
-    @@codesl['4000']='commercial' # Shopping, business, trade activities
-    @@codesl['1100']='residential'
-    @@codesl['8100']='farmland'
+#    @@codesl['1000']='residential'
+#    @@codesl['2000']='commercial' # Shopping, business, trade activities
+#    @@codesl['4000']='commercial' # Shopping, business, trade activities
+#    @@codesl['1100']='residential'
+#    @@codesl['8100']='farmland'
 
     @@proto= LandUse.new
 
     @@fcodesl= Hash.new
-    @@fcodesl['6610']= lambda {|o|  o.attributes['amenity'] = "place_of_worship"    }
-    @@fcodesl['6121']= lambda {|o|  o.attributes['amenity'] = "school" }
+
+    @@fcodesl['1101']= lambda {|o|       
+      o.attributes['landuse'] = 'residential'    
+      o.attributes['building'] = 'residential'
+    }
+
+    @@fcodesl['1160']= lambda {|o|       
+      o.attributes['landuse'] = 'residential'    
+      o.attributes['building'] = 'trailer_park'
+    }
+
+    @@fcodesl['1165']= lambda {|o|       
+      o.attributes['landuse'] = 'residential'    
+      o.attributes['building'] = 'trailer_park'
+    }
+
+    @@fcodesl['1180']= lambda {|o|       
+      o.attributes['landuse'] = 'residential'    
+      o.attributes['building'] = 'appartment'
+    }
+
+    @@fcodesl['1150']= lambda {|o|       
+      o.attributes['landuse'] = 'residential'    
+      o.attributes['building'] = 'appartment'
+    }
+
+    @@fcodesl['1176']= lambda {|o|       
+      o.attributes['landuse'] = 'residential'    
+      o.attributes['building'] = 'appartment'
+    }
+
+    @@fcodesl['1170']= lambda {|o|       
+      o.attributes['landuse'] = 'residential'    
+      o.attributes['building'] = 'appartment'
+    }
+
+
+    @@fcodesl['4120']= lambda {|o|       
+      o.attributes['landuse'] = 'industrial'    
+      o.attributes['building'] = 'industrial'
+      o.attributes['railway'] = 'unknown'
+    }
+
+    @@fcodesl['4110']= lambda {|o|       
+      o.attributes['landuse'] = 'industrial'    
+      o.attributes['building'] = 'industrial'
+      o.attributes['aeroway'] = 'unknown'
+    }
+
+    @@fcodesl['9910']= lambda {|o|       
+      o.attributes['landuse'] = 'residential'    
+      o.attributes['building'] = 'residential'
+    }
+
+    @@fcodesl['1104']= lambda {|o|       
+      o.attributes['landuse'] = 'residential'    
+      o.attributes['building'] = 'residential'
+    }
+
+    @@fcodesl['1102']= lambda {|o|       
+      o.attributes['landuse'] = 'residential'    
+      o.attributes['building'] = 'residential'
+    }
+
+
+    @@fcodesl['9965']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+    }
+
+    @@fcodesl['2102']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['shop'] = 'yes'
+    }
+
+
+    @@fcodesl['2111']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['shop'] = 'truck'
+    }
+
+    @@fcodesl['4234']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+    }
+
+    @@fcodesl['6562']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['amenity'] = 'kindergarten'
+
+    }
+
+    
+
+    @@fcodesl['2176']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['shop'] = 'car_repair'
+      o.attributes['car_repair'] = 'lube'
+#      shop = 
+    }
+    @@fcodesl['2211']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['amenity'] = 'bank'
+    }
+
+    @@fcodesl['2210']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['amenity'] = 'bank'
+    }
+
+    @@fcodesl['6222']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['amenity'] = 'jail'
+    }
+
+    @@fcodesl['5111']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['amenity'] = 'theater'
+    }
+
+    @@fcodesl['5000']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['amenity'] = 'theater'
+    }
+
+    @@fcodesl['4310']= lambda {|o|       
+      o.attributes['landuse'] = 'industrial'    
+      o.attributes['building'] = 'industrial'
+      o.attributes['industrial'] = 'power'
+    }
+
+    @@fcodesl['4321']= lambda {|o|       
+      o.attributes['landuse'] = 'industrial'    
+      o.attributes['building'] = 'industrial'
+      o.attributes['industrial'] = 'natural_gas'
+    }
+
+    @@fcodesl['3111']= lambda {|o|       
+      o.attributes['landuse'] = 'industrial'    
+      o.attributes['building'] = 'industrial'
+      o.attributes['industrial'] = 'meat'
+    }
+
+    @@fcodesl['3324']= lambda {|o|       
+      o.attributes['landuse'] = 'industrial'    
+      o.attributes['building'] = 'industrial'
+      o.attributes['industrial'] = 'plastic'
+    }
+
+    @@fcodesl['3400']= lambda {|o|       
+      o.attributes['landuse'] = 'industrial'    
+      o.attributes['building'] = 'industrial'
+      o.attributes['industrial'] = 'manufacturing'
+    }
+
+    @@fcodesl['7100']= lambda {|o|       
+      o.attributes['landuse'] = 'industrial'    
+      o.attributes['building'] = 'industrial'
+      o.attributes['industrial'] = 'construction'
+    }
+
+    @@fcodesl['9231']= lambda {|o|       
+      o.attributes['landuse'] = 'industrial'    
+      o.attributes['building'] = 'industrial'
+      o.attributes['industrial'] = 'grain elevator'
+    }
+
+    @@fcodesl['4140']= lambda {|o|       
+      o.attributes['landuse'] = 'industrial'    
+      o.attributes['building'] = 'industrial'
+      o.attributes['industrial'] = 'freight'
+    }
+
+    @@fcodesl['2332']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['shop'] = 'tractor'
+    }
+
+    @@fcodesl['9235']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['shop'] = 'farm'
+    }
+
+    @@fcodesl['9010']= lambda {|o|       
+      o.attributes['landuse'] = 'farmyard'    
+      o.attributes['building'] = 'farm'
+    }
+
+    @@fcodesl['9020']= lambda {|o|       
+      o.attributes['landuse'] = 'farmyard'    
+      o.attributes['building'] = 'farm'
+    }
+
+
+    @@fcodesl['2175']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['shop'] = 'car_repair'
+    }
+
+    @@fcodesl['4000']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+    }
+
+    @@fcodesl['2105']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['shop'] = 'yes'
+    }
+
+    @@fcodesl['2112']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['shop'] = 'trailer'
+    }
+
+    @@fcodesl['3519']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['shop'] = 'salvage'
+    }
+
+    @@fcodesl['3519']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['shop'] = 'salvage'
+    }
+
+    @@fcodesl['6000']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+    }
+
+
+    @@fcodesl['2510']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['amenity'] = 'restaurant'
+      o.attributes['building'] = 'commercial'
+    }
+
+    @@fcodesl['2522']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['amenity'] = 'restaurant'
+      o.attributes['cuisine'] = 'fast_food'
+      o.attributes['building'] = 'commercial'
+    }
+
+    @@fcodesl['2521']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['amenity'] = 'restaurant'
+      o.attributes['cuisine'] = 'fast_food'
+      o.attributes['building'] = 'commercial'
+    }
+
+
+    @@fcodesl['2117']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+    }
+
+    @@fcodesl['6720']= lambda {|o|       
+      o.attributes['landuse'] = 'cemetery'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['shop'] = 'funeral directors'      
+    }
+
+    @@fcodesl['6710']= lambda {|o|       
+      o.attributes['landuse'] = 'cemetery'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['shop'] = 'funeral directors'      
+    }
+
+    @@fcodesl['6511']= lambda {|o|       
+      o.attributes['landuse'] = 'cemetery'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['office'] = 'doctor'      
+      o.attributes['health'] = 'yes'      
+    }
+
+    @@fcodesl['4346']= lambda {|o|       
+      o.attributes['landuse'] = 'industrial'    
+      o.attributes['building'] = 'industrial'
+      o.attributes['industrial'] = 'waste disposal'      
+    }
+
+    @@fcodesl['2172']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+    }
+
+    @@fcodesl['9920']= lambda {|o|       
+      o.attributes['landuse'] = 'industrial'    
+      o.attributes['building'] = 'industrial'
+      o.attributes['industrial'] = 'waste disposal'      
+    }
+
+    @@fcodesl['2101']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['store'] = 'yes'      
+    }
+
+    @@fcodesl['2152']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['store'] = 'convenience'      
+    }
+
+    @@fcodesl['2174']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['store'] = 'car_service'      
+    }
+
+    @@fcodesl['2126']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['store'] = 'building'      
+    }
+
+    @@fcodesl['2540']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['amenity'] = 'nightclub'
+    }
+
+    @@fcodesl['2403']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['office'] = 'yes'      
+    }
+
+    @@fcodesl['2402']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['office'] = 'yes'      
+    }
+
+    @@fcodesl['2660']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['amenity'] = 'parking'      
+      o.attributes['parking'] = 'garage'      
+    }
+
+    #landuse=
+
+    @@fcodesl['4170']= lambda {|o|       
+      o.attributes['landuse'] = 'commercial'    
+      o.attributes['building'] = 'commercial'
+      o.attributes['commercial']="postal"
+
+    }
+
+    @@fcodesl['6610']= lambda {|o|  o.attributes['amenity'] = "place_of_worship"   
+      o.attributes['building'] = "church"
+    }
+
+    @@fcodesl['2118']= lambda {|o|  
+      o.attributes['shop'] = "car"  
+      o.attributes['building'] = 'commercial'
+    }
+
+#2118
+
+    @@fcodesl['6121']= lambda {|o|  
+      o.attributes['amenity'] = "school" 
+      o.attributes['building'] = "school"
+    }
+
+    @@fcodesl['6140']= lambda {|o|  
+      o.attributes['amenity'] = "school" 
+      o.attributes['building'] = "school"
+    }
+
     @@fcodesl['4238']= lambda {|o|    
       o.attributes['manmade'] = 'tower'
       o.attributes['tower'] = 'communcations'
     }
 
-    @@fcodesl['2128']= lambda {|o|       o.attributes['shop'] = 'variety store'    }
-    @@fcodesl['9050']= lambda {|o|       o.attributes['landuse'] = 'farmland'    }
-    @@fcodesl['6123']= lambda {|o|       o.attributes['amenity'] = "school" }
+    @@fcodesl['2128']= lambda {|o|       o.attributes['shop'] = 'variety store'  
+      o.attributes['building'] = "commercial"
+}
+
+    @@fcodesl['2000']= lambda {|o|       
+      o.attributes['shop'] = 'yes'  
+      o.attributes['building'] = "commercial"
+      o.attributes['landuse'] = "commercial"
+}
+
+    @@fcodesl['9050']= lambda {|o|       o.attributes['landuse'] = 'farmland'    
+      o.attributes['building'] = "farm"
+    }
+    @@fcodesl['6123']= lambda {|o|       o.attributes['amenity'] = "school" 
+      o.attributes['building'] = "school"
+    } 
+    @@fcodesl['3610']= lambda {|o|       o.attributes['building'] = "warehouse" }
+    @@fcodesl['3660']= lambda {|o|       o.attributes['building'] = "warehouse" }
+    @@fcodesl['3640']= lambda {|o|       o.attributes['building'] = "warehouse" }
+    @@fcodesl['3630']= lambda {|o|       o.attributes['building'] = "warehouse" }
+    @@fcodesl['9970']= lambda {|o|       o.attributes['building'] = "commercial" }
+    @@fcodesl['3342']= lambda {|o|       
+      o.attributes['building'] = "industrial"
+      o.attributes['industrial'] = "Steel fabrication"
+    }
+
+    @@fcodesl['3341']= lambda {|o|       
+      o.attributes['building'] = "industrial"
+      o.attributes['industrial'] = "Steel and Iron Foundry"
+    }
+
+    @@fcodesl['4215']= lambda {|o|       
+      o.attributes['building'] = "industrial"
+      o.attributes['industrial'] = "Printing"
+    }
+
+    @@fcodesl['5210']= lambda {|o|       
+      o.attributes['building'] = "commercial"
+      o.attributes['commercial'] = "unknown"
+    }
+
+    @@fcodesl['1175']= lambda {|o|       
+      o.attributes['building'] = "commercial"
+    }
+
+
+    @@fcodesl['2321']= lambda {|o|       
+      o.attributes['building'] = "warehouse"
+    }
+
+    @@fcodesl['6832']= lambda {|o|       
+      o.attributes['building'] = "Fraternal institution"
+    }
+
+    @@fcodesl['1332']= lambda {|o|       
+      o.attributes['tourism'] = "hotel"
+    }
+
+    @@fcodesl['9950']= lambda {|o|       o.attributes['landuse'] = "unused" }
+    @@fcodesl['2650']= lambda {|o|       o.attributes['amenity'] = "parking" }
+    @@fcodesl['2401']= lambda {|o|       
+      o.attributes['office'] = "yes"
+      o.attributes['building'] = "office"
+    }
       
+
+
+    @@fcodesl['6630']= lambda {|o|       
+      o.attributes['landuse'] = 'residential'    
+      o.attributes['building'] = 'residential'
+      o.attributes['amenity'] = "place_of_worship"   
+    }
+
+    @@fcodesl['6570']= lambda {|o|       
+      o.attributes['landuse'] = 'residential'    
+      o.attributes['building'] = 'residential'
+      o.attributes['amenity'] = "charity"   
+    }
+
+    @@fcodesl['6560']= lambda {|o|       
+      o.attributes['landuse'] = 'residential'    
+      o.attributes['building'] = 'residential'
+      o.attributes['amenity'] = "welfare"   
+    }
+
+
+    @@fcodesl['5510']= lambda {|o|       
+      o.attributes['leisure'] = "park"   
+    }
+
+    @@fcodesl['5520']= lambda {|o|       
+      o.attributes['leisure'] = "park"   
+    }
+
+
+    @@fcodesl['1199']= lambda {|o|       
+      o.attributes['landuse'] = 'residential'    
+      o.attributes['building'] = 'residential'
+      o.attributes['amenity'] = "parking"   
+    }
+
+#    #@@fcodes['6630']='Religious living quarters'
 
     # from http://aims.jocogov.org/OtherResources/luval.aspx?n=LBCS%20Activity&t=lulbcsactivity&f1=code&f2=description
     #LBCSACTIVITY
@@ -548,6 +1032,9 @@ lbcs:function:code
 lbcs:function:name
 amenity
 landuse
+manmade
+power
+building
 addr:city
 addr:state
 addr:postcode
@@ -950,6 +1437,12 @@ class GIS
       p= lookup( street)
     }
   end
+
+  def simple (x)
+    process([x])
+    f = File.open(x + ".osm", 'w') 
+    osmxml(f)
+  end
   
 end
 
@@ -968,6 +1461,32 @@ g=GIS.new()
 # g.process(['SW Wanamaker RD'])
 # g.process(['S Kansas Ave','N Kansas Ave'])
 #g.process(['SW TOPEKA BLVD'])
-g.process(['NW Rochester Rd'])
-f = File.open("Rochester.osm", 'w') # {|f| f.write(html) }
-g.osmxml(f)
+#g.process(['NW Rochester Rd'])
+#f = File.open("Rochester.osm", 'w') # {|f| f.write(html) }
+
+#g.process(['NW Jackson St'])
+#f = File.open("NWJackson.osm", 'w') # {|f| f.write(html) }
+
+#g.process(['SE Monroe St'])
+#f = File.open("SEMonroe.osm", 'w') # {|f| f.write(html) }
+
+#g.process(['SW 42nd St'])
+#f = File.open("Sw42.osm", 'w') # {|f| f.write(html) }
+
+
+#g.process(['Eugene'])
+#f = File.open("NEEugene.osm", 'w') # {|f| f.write(html) }
+
+
+#g.process(['Brickyard'])
+#f = File.open("Brickyard.osm", 'w') # {|f| f.write(html) }
+
+#g.simple ('STRAIT')
+#g.simple ('Madison')
+#g.simple ('32nd')
+#g.simple ('42nd')
+#g.simple ('57th')
+
+g.simple ('Kansas Ave')
+
+

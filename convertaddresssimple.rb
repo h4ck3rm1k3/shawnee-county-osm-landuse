@@ -881,6 +881,9 @@ g=GIS.new()
 # g.process(['SW Wanamaker Dr'])
 # g.process(['SW Wanamaker RD'])
 # g.process(['S Kansas Ave','N Kansas Ave'])
-g.process(['SW TOPEKA BLVD'])
-f = File.open("SWTopekaBvld.osm", 'w') # {|f| f.write(html) }
+#g.process(['SW TOPEKA BLVD'])
+#f = File.open("SWTopekaBvld.osm", 'w') # {|f| f.write(html) }
+g.process(['NW Rochester Rd'])
+f = File.open("Rochester.osm", 'w') # {|f| f.write(html) }
+
 g.osmxml(f)
