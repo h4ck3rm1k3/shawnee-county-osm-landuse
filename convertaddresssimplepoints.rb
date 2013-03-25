@@ -91,7 +91,6 @@ class BaseNode
     @@abbr['HTS'] = 'HEIGHTS'
     @@abbr['HVN'] = 'HAVEN'
     @@abbr['HWY'] = 	'Highway'
-    @@abbr['HWY'] = 'HIGHWAY'
     @@abbr['INLT'] = 'INLET'
     @@abbr['IS'] = 'ISLAND'
     @@abbr['ISS'] = 'ISLANDS'
@@ -156,7 +155,6 @@ class BaseNode
     @@abbr['SQ'] = 	'Square'
     @@abbr['SQ'] = 'SQUARE'
     @@abbr['ST'] = 	'Street'
-    @@abbr['ST'] = 'STREET'
     @@abbr['STA'] = 'STATION'
     @@abbr['STE'] = 'SUITE'
     @@abbr['STR'] = 	'Street'
@@ -938,6 +936,13 @@ class BaseNode
       o.attributes['commercial']="postal"
 
     }
+
+#amenity=
+    @@fcodesl['5315']=lambda {|o| 
+      o.attributes['amenity'] = "community_centre"   
+      o.attributes['landuse'] = "fairgrounds"
+    }
+
 
     @@fcodesl['6610']= lambda {|o|  o.attributes['amenity'] = "place_of_worship"   
       o.attributes['building'] = "church"
@@ -1877,7 +1882,8 @@ class Property  < Way
           @attributes['addr:suite']=streettype
           streettype = paddressa.pop
           if @@abbr.include?(streettype)
-            @attributes['addr:street_type']=@@abbr[streettype]
+            @attributes['addr:street_type']=@@abbr[streettype].capitalize()
+            
           else
             warn @attributes
             abort("no street type" + streettype )        
@@ -1888,33 +1894,23 @@ class Property  < Way
 
     namelist = paddressa.map(&:capitalize);    
     @attributes['addr:street_name']=namelist.join(" ") # the rest
-
-
-
     @attributes['addr:full']=     [@attributes['addr:housenumber'] , 
                                    @attributes['addr:bearing']     ,
                                    @attributes['addr:street_name'] , 
                                    @attributes['addr:street_type'] 
                                   ].flatten.join(" ")
-
     @attributes['addr:street']=     [@attributes['addr:bearing']     ,
                                      @attributes['addr:street_name'] , 
                                      @attributes['addr:street_type'] 
                                     ].flatten.join(" ")
-    
-
+   
 #    print @attributes['addr:street_name'] + "\n"
-
     @attributes['addr:city']=paddressa2[0]
     @attributes['addr:state']=paddressa2[1]
     @attributes['addr:postcode']=paddressa2[2]
     @attributes['addr:country']="US"
-
-
-
     function=@attributes['snco.us:lbcsfunction'].split("-")
     code=@attributes['snco.us:lbcsactivity'].split("-")
-
     @attributes['lbcs:activity:code']=code[0]
     @attributes['lbcs:activity:name']=code[1]
     @attributes['lbcs:function:code']=function[0]
@@ -1924,7 +1920,6 @@ class Property  < Way
   end 
 end
 
-
 class GIS 
   
   def initialize()
@@ -1933,11 +1928,9 @@ class GIS
   
   def cache(street, url )
     local_filename="data/" + street
-
     if ! File.directory?("data")
       Dir.mkdir("data", 0700) #=> 0
     end
-
     if File.exists?(local_filename)
       File.open(local_filename, "r") {|f|
         html= f.read
@@ -1975,7 +1968,6 @@ class GIS
     p.closeway
     p.cleanup
     @properties.push(p)
-
   end
 
   def lookup(street) 
@@ -1991,13 +1983,8 @@ class GIS
       "&spatialRel=esriSpatialRelIntersects" \
     "&f=json" \
     "&outSR=" + srlatlong.to_s + "&where=PADDRESS%20LIKE%20%27%25" + qry + "%25%27&returnGeometry=true"    
-
-
     html = cache street,url
-
     json = JSON.parse(html)
-
-
     if json 
       if json.include?('features')
         json['features'].each{ |inprop|
@@ -2010,7 +1997,6 @@ class GIS
         return nil
       end
     end
-
     return p
   end
 
@@ -2033,7 +2019,6 @@ class GIS
   end
 
   def process (roads )
-
     found = 0
     roads.flatten.each { 
       |street|
@@ -2042,15 +2027,12 @@ class GIS
   end
 
   def simple (x)
-
     @properties.clear
-
     process([x])
     if (@properties.count > 1)
       p "found:" + x.to_s + " count: "+@properties.count.to_s
       f = File.open(x + ".osm", 'w') 
       osmxml(f)
-
       f = File.open(x + "_way.osm", 'w') 
       osmxml_way(f)
     else
@@ -2059,7 +2041,6 @@ class GIS
   end
   
 end
-
 
 g=GIS.new()
 
@@ -2760,7 +2741,7 @@ other = [ '14th st',
 ]
 
 ###
-newstuff =[
+newstuff2 =[
  'k4 highway',
  'k4',
  'highway',
@@ -2771,6 +2752,54 @@ newstuff =[
  '70 hwy',
  'I 470 hwy',
  'highway',
+ 'burgess',
+ 'Kincaid',
+ 'Brier',
+            'holman',
+            'grantville',
+            'kreipe',
+            'shadden',
+'sardou',
+'NE GONVIL ST',
+"ne 86th st",
+"ne 94th st",
+"ne 82nd st",
+"ne 78th st",
+"ne 66th st",
+"ne 62nd st",
+"ne 54th st",
+"ne 50th st",
+"ne 46th st",
+"NE North Ave",
+"Pleasant Hill",
+"NE St John St",
+"Shuler",
+"NE Tahoe DR",
+"Tantara",
+"walnut grove",
+"Landon", 
+"nw 38",
+"nw 38",
+"nw 39",
+"nw topeka",           
+"nw apache trl",           
+"nw apollo",           
+"nw morley",           
+"meriden",           
+"nw broad st",           
+"Tyler",           
+"Capitol View",
+"Independence",
+"NE 31st",
+"N Kansas",
+"NE 39st",
+"NE 35",
+"Croco",
+"Shaffer",
+]
+
+newstuff =[
+"NE 56th",
 
 ]
 
