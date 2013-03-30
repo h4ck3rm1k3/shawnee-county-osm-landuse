@@ -221,18 +221,17 @@ addr:city
 addr:postcode
 addr:street
 addr:housenumber
+addr:suite
 }
 
 
-    @@fields2 = %w{    
 
-}
 
   end
 
   def self.getfields ()
     Property.initfields
-    return [@@infields,@@fields2].flatten
+    return [@@infields].flatten
   end
 
   def self.bearings 
@@ -268,15 +267,21 @@ addr:housenumber
   end
   
 
-  def osmxml (ios)
+  def emitattr(ios)
 
     @@fields.each {|x| 
       k=x
       v=@attributes[k]
-      if (!v.nil?)
+      if (!v.nil? and v.length()  > 0 )
         emitkv ios, k, v
       end
     }
+  
+  end
+
+  def osmxml (ios)
+
+    emitattr(ios)
 
   end
   
@@ -373,14 +378,9 @@ class Property  < Way
     
   end
 
+
   def osmxml (ios)
-    @@fields.each {|x| 
-      k=x
-      v=@attributes[k]
-      if (!v.nil?)
-        emitkv ios, k, v
-      end
-    }
+    emitattr(ios)
     self.midpoint # calc the midpoint
     if (@middle.nil?)
       abort "midpoint not set"
@@ -392,14 +392,9 @@ class Property  < Way
   def osmxml_way (ios)
     @nodes.each { |x| x.osmxml(ios) }
     ios.write("<way id=\"#{@id}\" >\n")
-    @@fields.each {|x| 
-      k=x
-      v=@attributes[k]
-      if (!v.nil?)
-        emitkv ios, k, v
-      end
 
-    }
+    emitattr(ios)
+
     @nodes.each { |x| x.osmxmlref(ios) }
     ios.write("</way>\n")
   end
@@ -430,7 +425,7 @@ class Property  < Way
       print "looking at " + streettype
       if (!streettype.nil?)
         streettypeu = streettype.upcase
-        if (not( @@abbr.include?(streettypeu)))
+        if ( @@abbr.include?(streettypeu))
           done = true
           @attributes['addr:street_type']=@@abbr[streettypeu]
           @attributes['addr:street_type']=@attributes['addr:street_type']
@@ -443,13 +438,14 @@ class Property  < Way
 
     end
 
-    print endings
+#    print endings
 
     paddressa.push(streettype) 
 #    paddressa.push(blockname)
 #    paddressa.push(blocknumber)
 
     @attributes['addr:street']=paddressa.join(" ") # the rest
+    @attributes['addr:suite']=endings.join(" ") # the rest
 
     print "house number:"+ housenumberorbearing + "\t"
     print "address:"+ @attributes['addr:street'] + "\n"
