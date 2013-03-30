@@ -1643,6 +1643,7 @@ addr:suite
 
     @@fields2 = %w{    ONAME MAILNAME     MAILADDRESS     MAILADDRESS2   WebLink PRC_Link PADDRESS    PADDRESS2 
 LBCSFUNCTION     LBCSACTIVITY BLDGVAL     LDVAL     TOTVAL  
+
 }
 
   end
@@ -2796,11 +2797,36 @@ newstuff2 =[
 "NE 35",
 "Croco",
 "Shaffer",
+"NE 56th",
+"NE 74th",
+"NE Fairview",
+"SE 2nd",
+"SE 6th",
+"SE 10th",
+"SE 21th",
+"SE Green",
+"SE Stanley",
+"SE 29th",
+"SE 37th",
+"SE 45th",
+"SE 53th",
+"SE 61th",
+"SE 69th",
+"SE 77th",
+"SE 85th",
+"SE 89th",
+"SE 101th",
+"SE 105th",
+"SE 109th",
+"NE 70th",
+"NE Brown Rd",
+"NE Sherman Rd",
+"NE Silver Rd",
+
 ]
 
 newstuff =[
-"NE 56th",
-
+           "NE NORWOOD ST"
 ]
 
 newstuff.each { |x|
