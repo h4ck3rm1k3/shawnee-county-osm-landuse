@@ -2821,12 +2821,32 @@ newstuff2 =[
 "NE 70th",
 "NE Brown Rd",
 "NE Sherman Rd",
-"NE Silver Rd",
-
+            "NE Silver Rd",
+            "NE NORWOOD ST",
+            "NW Geronimo",
+            "NW Gibby",
+            "NW Leedy",
+            "NW Jennings",
+            "Nw 35",
+           "Nw 46th",
+           "Nw huxman",
+           "Nw valencia",
+           "Nw 31",
+           "Nw docking",
+          "Nw humphrey",
 ]
 
+
 newstuff =[
-           "NE NORWOOD ST"
+"nw 86th st",
+"nw 94th st",
+"nw 82nd st",
+"nw 78th st",
+"nw 66th st",
+"nw 62nd st",
+"nw 54th st",
+"nw 50th st",
+ 
 ]
 
 newstuff.each { |x|
