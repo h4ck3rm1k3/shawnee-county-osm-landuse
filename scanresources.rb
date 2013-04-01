@@ -6,7 +6,7 @@ require 'facets/string/titlecase'
 
 
 def cacheJson(name, url )
-  print url + "\n"
+  print "\n" + "name:"+name + "\turl:" + url + "\n"
   local_filename="scan/" + name
   if ! File.directory?("scan")
     Dir.mkdir("scan", 0700) #=> 0
@@ -35,7 +35,7 @@ def getMapServerLayer(base,name,layerno,layername)
   layer = cacheJson(
                     "Map" + name + "_layer_" + layername , 
                     base + '/'  + name + '/MapServer/' + layerno.to_s + '?f=json&pretty=true')
-  print layer
+#  print layer
 end
 
 def getMapServer(base,name)
