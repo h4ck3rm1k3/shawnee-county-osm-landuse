@@ -1,3 +1,4 @@
+#!/usr/bin/ruby
 require 'open-uri'
 require 'json'
 require 'cgi'
@@ -1106,6 +1107,12 @@ class BaseNode
       o.attributes['tourism'] = "museum"   
     }
 
+    #
+    @@fcodesl['9980']= lambda {|o|       
+      o.attributes['landuse'] = "industrial"   
+      o.attributes['industrial'] = "mining"   
+    }
+    
 
     @@fcodesl['1199']= lambda {|o|       
       o.attributes['landuse'] = 'residential'    
@@ -1713,6 +1720,10 @@ class Node  < BaseNode
   end
 
   def landuse 
+
+    #deleect 
+    @attributes['building'] = nil
+
     if (@attributes['lbcs:activity:code'].nil?)
       @attributes['fixme'] = "check this lbcs"     
       return
@@ -2834,10 +2845,6 @@ newstuff2 =[
            "Nw 31",
            "Nw docking",
           "Nw humphrey",
-]
-
-
-newstuff =[
 "nw 86th st",
 "nw 94th st",
 "nw 82nd st",
@@ -2846,10 +2853,67 @@ newstuff =[
 "nw 62nd st",
 "nw 54th st",
 "nw 50th st",
- 
+"halfday", 
+"hunter", 
+"foxcroft", 
+"woodstock",
+"maupin",
+           "industrial",
+           "kingsway",
+           "lowry",
+
+           "meadowbrook",
+           "meadowcrest",
+           "morley",
+           "moundview",
+           "myrtle",
+           "nboro",
+           "hills",
+           "pointe",
+           "oadview",
+           "indianola",
+           "proctor",
+           "ramblewood",
+           "ridgewood",
+           "ridgeway",
+           "ross",
+           "st john",
+           "saline",
+           "schaller",
+           "seaman",
+           "shawna",
+           "clure",
+           "mack",
+           "northboro",
+           "kings",
+           "fountaindale",
+           "wentley",
+           "gisbourne",
+           "tubury",
+           "sherwood",
+           
+            "finsbury",
+            "tutbury",
+           "nw lowry ln",
+           "nw north hills dr",
+           "sw broadview dr",
+           "sw valley glen rd",
+           "perry",
+           "glick",
+           "Emland"           ,
+           "SW woodglen"           ,
+            "worwick"           
 ]
 
-newstuff.each { |x|
+
+newstuff =[
+
+           
+
+
+]
+
+ARGV.each { |x|
   print x;
   g.simple(x)
   }
