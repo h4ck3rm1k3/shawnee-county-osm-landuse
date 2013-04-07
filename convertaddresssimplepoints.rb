@@ -12,6 +12,9 @@ class LandUse
   end
 end
 
+#the nodes see
+@@seen=Hash.new 
+
 class BaseNode 
   def self.initfields ()
     @@abbr= Hash.new
@@ -1721,8 +1724,8 @@ class Node  < BaseNode
 
   def landuse 
 
-    #deleect 
-    @attributes['building'] = nil
+    #delete 
+
 
     if (@attributes['lbcs:activity:code'].nil?)
       @attributes['fixme'] = "check this lbcs"     
@@ -1746,13 +1749,6 @@ class Node  < BaseNode
     end
   end
 
-  def church 
-o
-  end
-
-  def school
-
-  end
 
   def initialize(lat,lon)
     super()
@@ -1773,7 +1769,10 @@ o
   end
 end
 
+
 class Way  < BaseNode
+
+
 
   def initialize()
     super
@@ -1793,12 +1792,25 @@ class Property  < Way
   end
 
   def addpoint (lat,lon)
-    p = Node.new(lat,lon)
-    if (!p.nil?)
-      @nodes.push(p)
-    else
-      abort "no node"
-    end
+
+    key = lat.to_s + '|' + lon.to_s
+
+    if (@@seen.has_key?( key ))  
+        p =  @@seen[ key ]
+#      print "Found:"  + p.id.to_s + "\n"
+#      print  p.osmxml($stdout)
+        @nodes.push(p)
+      else
+        p = Node.new(lat,lon)
+        if (!p.nil?)
+          @nodes.push(p)
+        else
+          abort "no node"
+        end      
+        @@seen[ key ] = p
+      end
+
+
   end
 
   def closeway
@@ -1841,6 +1853,7 @@ class Property  < Way
   def osmxml_way (ios)
     @nodes.each { |x| x.osmxml(ios) }
     ios.write("<way id=\"#{@id}\" >\n")
+    @attributes.delete('building')
     @@fields.each {|x| 
       k=x
       v=@attributes[k]
