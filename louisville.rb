@@ -1,4 +1,5 @@
 #!/usr/bin/ruby
+# -*- coding: utf-8 -*-
 require 'open-uri'
 require 'json'
 require 'cgi'
@@ -561,8 +562,8 @@ class GIS
           #http://proj.maptools.org/gen_parms.html
           #http://www.lojic.org/apps/control/pdfs/techdocs/2005_RestoreDens/AppendixF_Meters05.pdf
           srcPoint = Proj4::Point.new(
-                                      house["X" ] , #+ 1185268.1600, 
-                                      house["Y" ] , #+ 240989.4400
+                                      house["X" ] * 0.3048006 , # to meters
+                                      house["Y" ] * 0.3048006 , #
 
                                       )
 
@@ -572,8 +573,31 @@ class GIS
           # http://spatialreference.org/ref/epsg/2205/proj4/
           #+proj=lcc +lat_1=37.96666666666667 +lat_2=38.96666666666667 +lat_0=37.5 +lon_0=-84.25 +x_0=500000 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs 
           
+# Position	1601 386536.474500541 83256.1817279209
+# Zone	1601 - Kentucky North
+#  	Meters	US Survey Feet	International Feet
+# X	386536.475	1268161.750	1268164.286
+# Y	83256.182	273149.656	273150.203
+ 
+# Calculated Values - based on Degrees Lat Long to seven decimal places.
+# Position Type	State Plane - Kentucky North
+# Degrees Lat Long 	38.2428859°, -085.5461862°
+# Degrees Minutes	38°14.57316', -085°32.77117'
+# Degrees Minutes Seconds 	38°14'34.3894", -085°32'46.2703"
+# State Plane X Y (Meters)	1601 386536.475mE 83256.180mN
+# X Y (US Survey Feet)	1601 1268161.750ftUSE 273149.652ftUSN
+# X Y (International Feet)	1601 1268164.286ftE 273150.198ftN
+# UTM	16S 627222mE 4233763mN
+# MGRS	16SFH2722233763
+# Grid North	0.9°
+# Maidenhead	EM78FF48KH90
+# GEOREF	GJEJ27221457
+          
+
           srcPrj = Proj4::Projection.new(
-                                         "+proj=lcc +lat_1=37.96666666666667 +lat_2=38.96666666666667 +lat_0=37.5 +lon_0=-84.25 +x_0=500000 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=us-ft +no_defs <>"
+                                          "+proj=lcc +lat_1=37.96666666666667 +lat_2=38.96666666666667 +lat_0=37.5 +lon_0=-84.25 +x_0=500000 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+#                                         "epsg:2205"
+                                         #"+proj=lcc +lat_1=37.96666666666667 +lat_2=38.96666666666667 +lat_0=37.5 +lon_0=-84.25 +x_0=500000 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs <>"
                                          
 
                                          #"+proj=lcc +lat_1=37.08333333333334 +lat_2=38.66666666666666 +lat_0=36.33333333333334 +lon_0=-85.75 +x_0=1500000 +y_0=999999.9998983998 +ellps=GRS80 +to_meter=0.3048006096012192 +no_defs "
