@@ -231,6 +231,7 @@ addr:suite
 
   end
 
+
   def self.getfields ()
     Property.initfields
     return [@@infields].flatten
@@ -270,9 +271,10 @@ addr:suite
   
 
   def emitattr(ios)
-
-    @@fields.each {|x| 
+    
+    @attributes.each {|x| 
       k=x
+      p x
       v=@attributes[k]
       if (!v.nil? and v.length()  > 0 )
         emitkv ios, k, v
@@ -290,6 +292,13 @@ addr:suite
 end
 
 class Node  < BaseNode
+
+  def kv (k,v)
+    p "adding"
+    p k 
+    p v
+    @attributes[k]=v
+  end
 
   def osmxml (ios)
     ios.write("<node id=\"#{@id}\" lat=\"#{@lat}\"  lon=\"#{@lon}\" >\n" )
@@ -472,6 +481,11 @@ class GIS
   def initialize()
     @properties=Array.new
     @datadir="data_louisville/"
+    @destPrj  = Proj4::Projection.new("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") 
+    @srcPrj = Proj4::Projection.new(
+                                          "+proj=lcc +lat_1=37.96666666666667 +lat_2=38.96666666666667 +lat_0=37.5 +lon_0=-84.25 +x_0=500000 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
+                                         )
+
   end
 
 
@@ -561,67 +575,32 @@ class GIS
          
           #http://proj.maptools.org/gen_parms.html
           #http://www.lojic.org/apps/control/pdfs/techdocs/2005_RestoreDens/AppendixF_Meters05.pdf
+          #http://www.lojic.org/apps/control/pdfs/techdocs/2005_RestoreDens/AppendixD_LatLong05.pdf
+
           srcPoint = Proj4::Point.new(
+
                                       house["X" ] * 0.3048006 , # to meters
                                       house["Y" ] * 0.3048006 , #
-
                                       )
 
-          #http://www.lojic.org/apps/control/pdfs/techdocs/2005_RestoreDens/AppendixD_LatLong05.pdf
-          destPrj  = Proj4::Projection.new("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") 
+         
+          point = @srcPrj.transform(@destPrj, srcPoint)
 
-          # http://spatialreference.org/ref/epsg/2205/proj4/
-          #+proj=lcc +lat_1=37.96666666666667 +lat_2=38.96666666666667 +lat_0=37.5 +lon_0=-84.25 +x_0=500000 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs 
-          
-# Position	1601 386536.474500541 83256.1817279209
-# Zone	1601 - Kentucky North
-#  	Meters	US Survey Feet	International Feet
-# X	386536.475	1268161.750	1268164.286
-# Y	83256.182	273149.656	273150.203
- 
-# Calculated Values - based on Degrees Lat Long to seven decimal places.
-# Position Type	State Plane - Kentucky North
-# Degrees Lat Long 	38.2428859°, -085.5461862°
-# Degrees Minutes	38°14.57316', -085°32.77117'
-# Degrees Minutes Seconds 	38°14'34.3894", -085°32'46.2703"
-# State Plane X Y (Meters)	1601 386536.475mE 83256.180mN
-# X Y (US Survey Feet)	1601 1268161.750ftUSE 273149.652ftUSN
-# X Y (International Feet)	1601 1268164.286ftE 273150.198ftN
-# UTM	16S 627222mE 4233763mN
-# MGRS	16SFH2722233763
-# Grid North	0.9°
-# Maidenhead	EM78FF48KH90
-# GEOREF	GJEJ27221457
-          
+          lat = point.x  * Proj4::RAD_TO_DEG
+          lon= point.y  * Proj4::RAD_TO_DEG
 
-          srcPrj = Proj4::Projection.new(
-                                          "+proj=lcc +lat_1=37.96666666666667 +lat_2=38.96666666666667 +lat_0=37.5 +lon_0=-84.25 +x_0=500000 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
-#                                         "epsg:2205"
-                                         #"+proj=lcc +lat_1=37.96666666666667 +lat_2=38.96666666666667 +lat_0=37.5 +lon_0=-84.25 +x_0=500000 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs <>"
-                                         
+  ##{"ErrorMessage":"None","Candidates":[{"Houseno":11300,"Hafhouse":"","Apt":"","Roadname":"MAIN ST","FullAddress":"11300 MAIN ST","ZIPCode":"40243","Sitecad":1110337335,
+          p = Node.new(lat,lon)
+          p.kv('addr:housenumber', house["Housno"])
+#          p.kv('addr:suite', house)
+          p.kv('addr:full', house["FullAddress"])
+          p.kv('addr:street', house["Roadname"])
+          p.kv('addr:postcode', house["ZIPCode"])
+          p.kv('building', "yes")
 
-                                         #"+proj=lcc +lat_1=37.08333333333334 +lat_2=38.66666666666666 +lat_0=36.33333333333334 +lon_0=-85.75 +x_0=1500000 +y_0=999999.9998983998 +ellps=GRS80 +to_meter=0.3048006096012192 +no_defs "
-#                                         "+proj=lcc +lat_1=37.08333333333334 +lat_2=38.66666666666666 +lat_0=36.33333333333334 +lon_0=-85.75 +x_0=1500000 +y_0=1000000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=us-ft +no_defs "
-                                         #"+proj=lcc +lat_1=37.08333333333334 +lat_2=38.66666666666666 +lat_0=36.33333333333334 +lon_0=-85.75 +x_0=1500000 +y_0=999999.9998983998 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +to_meter=0.3048006096012192 +no_defs "
-                                         #"+proj=lcc +lat_1=37.96666666666667 +lat_2=37.96666666666667 +lat_0=37.5 +lon_0=-84.25 +x_0=500000 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
-
-                                         #"+proj=lcc +lat_1=37.96666666666667 +lat_2=38.96666666666667 +lat_0=37.5 +lon_0=-84.25 +x_0=500000 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs "
-                                         #"+proj=lcc +lat_1=37.96666666666667 +lat_2=38.96666666666667 +lat_0=37.5 +lon_0=-84.25 +x_0=500000 +y_0=0 +ellps=GRS80 +units=m +no_defs "
-#                                         "+proj=lcc +lat_1=37.96666666666667 +lat_2=38.96666666666667 +lat_0=37.5 +lon_0=-84.25 +x_0=609601.2192024384 +y_0=0 +ellps=clrk66 +datum=NAD27 +to_meter=0.3048006096012192 +no_defs "
-                                         #"+proj=lcc +lat_1=37.08333333333334 +lat_2=38.66666666666666 +lat_0=36.33333333333334 +lon_0=-85.75 +x_0=1500000 +y_0=1000000 +ellps=GRS80 +units=m +no_defs "
-                                         #"+proj=lcc +lat_1=37.08333333333334 +lat_2=38.66666666666666 +lat_0=36.33333333333334 +lon_0=-85.75 +x_0=1500000 +y_0=999999.9998983998 +ellps=GRS80 +datum=NAD83 +to_meter=0.3048006096012192 +no_defs "
-                                         #"+proj=lcc +lat_1=37.08333333333334 +lat_2=38.66666666666666 +lat_0=36.33333333333334 +lon_0=-85.75 +x_0=1500000 +y_0=1000000 +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
-                                         #"+proj=lcc +lat_1=37.96666666666667 +lat_2=38.96666666666667 +lat_0=37.5 +lon_0=-84.25 +x_0=500000.0001016001 +y_0=0 +ellps=GRS80 +to_meter=0.3048006096012192 +no_defs "
-                                         
-                                         )
-
-          
-
-          point = srcPrj.transform(destPrj, srcPoint)
-          p point 
-#          p srcPoint
-
-          #proj=lcc a=6378137 es=.0066943800229 lon_0=-84d15 lat_1=38d58 lat_2=37d58 lat_0=37d30 x_0=500000 y_0=0
+          p p
+#          p.osmxml(out)
+          @properties.push(p)
         }
       end     
     end
@@ -647,6 +626,7 @@ class GIS
         json['Candidates'].each{ |house_obj|
          # warn "found : "
           #p inprop
+
           validate_address(sid.to_s,house_obj["Houseno"].to_s)
         }
       else
@@ -663,6 +643,8 @@ class GIS
       return @properties[street]
     end
     qry=URI::encode(street)
+
+    
 
 #query the street name to get the SifID
     url = "http://ags2.lojic.org/ArcGIS/rest/services/External/Address/MapServer/exts/AddressRestSoe/ValidateStreetName?StreetName="+ qry + 
@@ -694,7 +676,12 @@ class GIS
       end
       
     end
+
+#    osmxml (ios)
+
     return p
+
+
   end
 
   def osmxml (ios)
@@ -721,11 +708,18 @@ class GIS
       |street|
       p= lookup( street)
     }
+
+    
+
   end
 
   def simple (x)
     @properties.clear
     process([x])
+
+      f = File.open("lousville" + x + ".osm", 'w') 
+      osmxml(f)
+
   end
   
 end
@@ -737,4 +731,5 @@ ARGV.each { |x|
   print x;
   g.simple(x)
   }
+
 
