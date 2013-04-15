@@ -1,3 +1,4 @@
+#!/usr/bin/ruby
 require 'open-uri'
 require 'json'
 require 'cgi'
@@ -597,16 +598,8 @@ end
 g=GIS.new()
 
 
-newstuff =[
-           "new hampshire st",
-           "se woodring rd",
-           "woodring",
-           "us 40",
-           "e 50 rd",
-           "east 50 road"
-]
-
-newstuff.each { |x|
-#  print x;
+ARGV.each { |x|
+  print x;
   g.simple(x)
   }
+
