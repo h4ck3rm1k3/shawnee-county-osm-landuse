@@ -6,48 +6,47 @@ require 'cgi'
 require 'open-uri'
 require 'facets/string/titlecase'
 
-class LandUse
-  def church (obj)
-    p obj
-    abort "todo"
-  end
-end
+# 
+require 'proj4'
 
 class BaseNode 
+
   def self.initfields ()
     @@abbr= Hash.new
-    @@abbr['AL'] = 	'Alley'
-    @@abbr['ALY'] = 'ALLEY'
-    @@abbr['ANX'] = 'ANNEX'
-    @@abbr['APT'] = 'APARTMENT'
-    @@abbr['ARC'] = 'ARCADE'
-    @@abbr['AVE'] = 	'Avenue'
-    @@abbr['AVE'] = 'AVENUE'
-    @@abbr['BCH'] = 'BEACH'
-    @@abbr['BG'] = 'BURG'
-    @@abbr['BLDG'] = 'BUILDING'
-    @@abbr['BLF'] = 'BLUFF'
-    @@abbr['BLVD'] = 'BOULEVARD'
+    @@codesl= Hash.new
+    @@proto= LandUse.new
+    @@bearing= Hash.new
+
+    @@abbr['AL'] =  'Alley'
+    @@abbr['ALY'] = 'Alley'
+    @@abbr['ANX'] = 'Annex'
+    @@abbr['APT'] = 'Apartment'
+    @@abbr['ARC'] = 'Arcade'
+    @@abbr['AVE'] = 'Avenue'
+    @@abbr['AVE'] = 'Avenue'
+    @@abbr['BCH'] = 'Beach'
+    @@abbr['BG'] = 'Burg'
+    @@abbr['BLDG'] = 'Building'
+    @@abbr['BLF'] = 'Bluff'
     @@abbr['BLVD'] = 'Boulevard'
-    @@abbr['BND'] = 'BEND'
-    @@abbr['BR'] = 'BRANCH'
-    @@abbr['BRG'] = 'BRIDGE'
-    @@abbr['BRK'] = 'BROOK'
-    @@abbr['BSMT'] = 'BASEMENT'
-    @@abbr['BTM'] = 'BOTTOM'
-    @@abbr['BYP'] = 'BYPASS'
-    @@abbr['BYU'] = 'BAYOU'
-    @@abbr['CIR'] = 	'Circle'
-    @@abbr['CIR'] = 'CIRCLE'
-    @@abbr['CLB'] = 'CLUB'
-    @@abbr['CLFS'] = 'CLIFF'
-    @@abbr['CLFS'] = 'CLIFFS'
-    @@abbr['COR'] = 'CORNER'
-    @@abbr['CORS'] = 'CORNERS'
-    @@abbr['CP'] = 'CAMP'
-    @@abbr['CPE'] = 'CAPE'
-    @@abbr['CRES'] = 'CRESCENT'
-    @@abbr['CRK'] = 'CREEK'
+    @@abbr['BND'] = 'Bend'
+    @@abbr['BR'] = 'Branch'
+    @@abbr['BRG'] = 'Bridge'
+    @@abbr['BRK'] = 'Brook'
+    @@abbr['BSMT'] =  'Basement'
+    @@abbr['BTM'] = 'Bottom'
+    @@abbr['BYP'] = 'Bypass'
+    @@abbr['BYU'] = 'Bayou'
+    @@abbr['CIR'] =  'Circle'
+    @@abbr['CLB'] = 'Club'
+    @@abbr['CLFS'] = 'Cliff'
+    @@abbr['CLFS'] = 'Cliffs'
+    @@abbr['COR'] = 'Corner'
+    @@abbr['CORS'] = 'Corners'
+    @@abbr['CP'] = 'Camps'
+    @@abbr['CPE'] = 'Cape'
+    @@abbr['CRES'] = 'Cresent'
+    @@abbr['CRK'] = 'Creek'
     @@abbr['CRSE'] = 'COURSE'
     @@abbr['CSWY'] = 'CAUSEWAY'
     @@abbr['CT'] = 	'Court'
@@ -143,6 +142,7 @@ class BaseNode
     @@abbr['RIV'] = 'RIVER'
     @@abbr['RM'] = 'ROOM'
     @@abbr['RNCH'] = 'RANCH'
+    @@abbr['ROAD'] = 'Road'
     @@abbr['RPDS'] = 'RAPID'
     @@abbr['RPDS'] = 'RAPIDS'
     @@abbr['RST'] = 'REST'
@@ -183,12 +183,7 @@ class BaseNode
     @@abbr['WLS'] = 'WELL'
     @@abbr['WLS'] = 'WELLS '
     @@abbr['XING'] = 'CROSSING'
-    @@abbr['road'] = 'Road'
 
-    @@codesl= Hash.new
-    @@proto= LandUse.new
-
-    @@bearing= Hash.new
     @@bearing['NW'] = 	'Northwest'
     @@bearing['NE'] = 	'Northeast'
     @@bearing['SE'] = 	'Southeast'
@@ -198,64 +193,13 @@ class BaseNode
     @@bearing['S'] = 	'South'
     @@bearing['W'] = 	'West'
 
-    @@infields = %w{    
-situs
-owner1
-owner2
-owner3
-address
-city
-state
-zip
-JOINPIN
-plate
-school
-SYSCALACRES
-OBJECTID
-Shape.area
-Shape.len
-
-
-}
-
-    @@fields = %w{    
-addr:city
-addr:postcode
-addr:street
-addr:housenumber
-addr:suite
-}
-
-
-
-
-  end
-
-
-  def self.getfields ()
-    Property.initfields
-    return [@@infields].flatten
   end
 
   def self.bearings 
-    Property.initfields
     return @@bearing.keys
   end
 
-  def initialize()
-    super
-    Property.initfields
-  end
-
   @@count=0
-
-  def attributes
-    @attributes
-  end 
-
-  def setattributes(v)
-    @attributes=v
-  end 
 
   def initialize()
     @attributes=Hash.new
@@ -269,12 +213,10 @@ addr:suite
     ios.write "<tag k=\"#{k}\" v=\"#{v}\"/>\n"   
   end
   
-
   def emitattr(ios)
     
-    @attributes.each {|x| 
+    @attributes.keys.each {|x| 
       k=x
-      p x
       v=@attributes[k]
       if (!v.nil? and v.length()  > 0 )
         emitkv ios, k, v
@@ -284,9 +226,7 @@ addr:suite
   end
 
   def osmxml (ios)
-
     emitattr(ios)
-
   end
   
 end
@@ -294,9 +234,6 @@ end
 class Node  < BaseNode
 
   def kv (k,v)
-    p "adding"
-    p k 
-    p v
     @attributes[k]=v
   end
 
@@ -308,17 +245,6 @@ class Node  < BaseNode
 
   def osmxmlref (ios)
     ios.write("<nd ref=\"#{@id}\" />\n")
-  end
-
-  def landuse 
-  end
-
-  def church 
-
-  end
-
-  def school
-
   end
 
   def initialize(lat,lon)
@@ -340,154 +266,17 @@ class Node  < BaseNode
   end
 end
 
-class Way  < BaseNode
-
-  def initialize()
-    super
-    @nodes=Array.new
-  end
-
-  def nodes
-    @nodes
-  end
-end
-
-class Property  < Way
- 
-
-  def kv (k,v)
-    @attributes[k]=v
-  end
-
-  def addpoint (lat,lon)
-    p = Node.new(lat,lon)
-    if (!p.nil?)
-      @nodes.push(p)
-    else
-      abort "no node"
-    end
-  end
-
-  def closeway
-    if (!@nodes[0].nil?)
-      @nodes.push(@nodes[0])
-    else
-    end
-  end
-
-  def midpoint 
-    sumlat = 0
-    sumlon = 0
-    @nodes.each { |x| 
-      sumlat += x.lat
-      sumlon += x.lon
-    }
-    @middle=  Node.new(sumlat/@nodes.size,sumlon/@nodes.size)    
-
-    @middle.setattributes( @attributes)
-    @middle.landuse
-    
-  end
-
-
-  def osmxml (ios)
-    emitattr(ios)
-    self.midpoint # calc the midpoint
-    if (@middle.nil?)
-      abort "midpoint not set"
-      else      
-      @middle.osmxml(ios)  #emit it
-    end
-  end
-
-  def osmxml_way (ios)
-    @nodes.each { |x| x.osmxml(ios) }
-    ios.write("<way id=\"#{@id}\" >\n")
-
-    emitattr(ios)
-
-    @nodes.each { |x| x.osmxmlref(ios) }
-    ios.write("</way>\n")
-  end
-
-
-
-
-  def cleanup
-
-    if ! @attributes.include?("data:situs")
-      abort('no address')
-    end
-    paddress=@attributes["data:situs"].capitalize()
-    @attributes['addr:full']=paddress
-
-    block = ""
-    paddressa=paddress.split(%r{\s})
-    housenumberorbearing = paddressa.shift
-    @attributes['addr:housenumber'] =  housenumberorbearing
-
-    endings = []
-
-    #
-    done = false
-    while (!done)
-      #paddressa or (! @attributes['addr:street_type'].nil?)
-      streettype = paddressa.pop
-      print "looking at " + streettype
-      if (!streettype.nil?)
-        streettypeu = streettype.upcase
-        if ( @@abbr.include?(streettypeu))
-          done = true
-          @attributes['addr:street_type']=@@abbr[streettypeu]
-          @attributes['addr:street_type']=@attributes['addr:street_type']
-        else
-          endings.push(streettype)          
-        end
-      else
-        done = true
-      end
-
-    end
-
-#    print endings
-
-    paddressa.push(streettype) 
-#    paddressa.push(blockname)
-#    paddressa.push(blocknumber)
-
-    @attributes['addr:street']=paddressa.join(" ") # the rest
-    @attributes['addr:suite']=endings.join(" ") # the rest
-
-    print "house number:"+ housenumberorbearing + "\t"
-    print "address:"+ @attributes['addr:street'] + "\n"
-
-
-    @attributes['addr:city']= @attributes["data:city"].capitalize()
-    @attributes['addr:state']=@attributes["data:state"].capitalize()
-    @attributes['addr:postcode']=@attributes["data:zip"].capitalize()
-    @attributes['addr:country']="US"
-    
-  end 
-end
-
-require 'proj4'
-
-
-
-
-
 class GIS 
   
   def initialize()
     @properties=Array.new
     @datadir="data_louisville/"
     @destPrj  = Proj4::Projection.new("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs") 
-    @srcPrj = Proj4::Projection.new(
-                                          "+proj=lcc +lat_1=37.96666666666667 +lat_2=38.96666666666667 +lat_0=37.5 +lon_0=-84.25 +x_0=500000 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"
-                                         )
-
+    # the projection is kentucky north 
+    # NAD83 / Kentucky North
+    #<2205> +proj=lcc +lat_1=37.96666666666667 +lat_2=38.96666666666667 +lat_0=37.5 +lon_0=-84.25 +x_0=500000 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs no_defs <>
+    @srcPrj = Proj4::Projection.new("+proj=lcc +lat_1=37.96666666666667 +lat_2=38.96666666666667 +lat_0=37.5 +lon_0=-84.25 +x_0=500000 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs"  )
   end
-
 
   def cache(street, url )
     local_filename=@datadir + street
@@ -509,8 +298,6 @@ class GIS
     end
   end
 
-  def get(url)
-  end
 
   def process_prop(inprop)
     
@@ -525,11 +312,6 @@ class GIS
       k.sub(".","_")
       k = "data:" + k         
       p.kv( k, val.to_s)
-
-#      print "test:"+ k + val.to_s + "\n"
-   #   else
-      #     abort("missing" + x)
-   #   end  
     }
 
     geo= inprop['geometry']['rings'][0]
@@ -555,51 +337,28 @@ class GIS
     html = cache  "house" + sid + "_house" + house ,url
 
     json = JSON.parse(html)
-#    p json
 
     if json 
       if json.include?('Candidates')
         json['Candidates'].each{ |house|
-#          warn "found : "
- 
-#LOUISVILLE SOUTH BASE 1/23
-#feet   meters
-#Northing/Y: 240989.4400 Northing/Y: 73453.728
-#Easting/X: 1185268.1600 Easting/X: 361270.458
-#Elevation/Z: 470.20 Elevation/Z: 143.459
-#Convergence: -0 59 04.68869 Convergence: -0 59 04.68869
-#Scale Factor: 0.999977225 Scale Factor: 0.999977225
-#Combined Factor: 0.999959941 Combined
-#Factor: 0.999959919
 
-         
-          #http://proj.maptools.org/gen_parms.html
-          #http://www.lojic.org/apps/control/pdfs/techdocs/2005_RestoreDens/AppendixF_Meters05.pdf
-          #http://www.lojic.org/apps/control/pdfs/techdocs/2005_RestoreDens/AppendixD_LatLong05.pdf
+          # creat the source point in meters
+          srcPoint = Proj4::Point.new(  house["X" ] * 0.3048006 ,      house["Y" ] * 0.3048006 ,                                   )
 
-          srcPoint = Proj4::Point.new(
-
-                                      house["X" ] * 0.3048006 , # to meters
-                                      house["Y" ] * 0.3048006 , #
-                                      )
-
-         
+          # transform it 
           point = @srcPrj.transform(@destPrj, srcPoint)
 
+          # covert to degrees
           lat = point.x  * Proj4::RAD_TO_DEG
           lon= point.y  * Proj4::RAD_TO_DEG
 
-  ##{"ErrorMessage":"None","Candidates":[{"Houseno":11300,"Hafhouse":"","Apt":"","Roadname":"MAIN ST","FullAddress":"11300 MAIN ST","ZIPCode":"40243","Sitecad":1110337335,
-          p = Node.new(lat,lon)
-          p.kv('addr:housenumber', house["Housno"])
-#          p.kv('addr:suite', house)
-          p.kv('addr:full', house["FullAddress"])
-          p.kv('addr:street', house["Roadname"])
-          p.kv('addr:postcode', house["ZIPCode"])
-          p.kv('building', "yes")
+          p = Node.new(lon,lat)
+          p.kv 'addr:housenumber', house["Housno"].to_s
+          p.kv 'addr:full', house["FullAddress"]
+          p.kv 'addr:street', house["Roadname"]
+          p.kv 'addr:postcode', house["ZIPCode"]
+          p.kv 'building', "yes"
 
-          p p
-#          p.osmxml(out)
           @properties.push(p)
         }
       end     
@@ -688,19 +447,12 @@ class GIS
     ios.write("<osm version=\"0.6\" >\n")
 #    p @properties
     @properties.each { |x| 
+#      p x 
       x.osmxml(ios) 
     }
     ios.write("</osm>\n")
   end
 
-  def osmxml_way (ios)
-    ios.write("<osm version=\"0.6\" >\n")
-#    p @properties
-    @properties.each { |x| 
-      x.osmxml_way(ios) 
-    }
-    ios.write("</osm>\n")
-  end
 
   def process (roads )
     found = 0
