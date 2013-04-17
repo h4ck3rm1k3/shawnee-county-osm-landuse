@@ -423,8 +423,9 @@ class Property  < Way
     while (!done)
       #paddressa or (! @attributes['addr:street_type'].nil?)
       streettype = paddressa.pop
-      print "looking at " + streettype
+
       if (!streettype.nil?)
+        print "looking at " + streettype
         streettypeu = streettype.upcase
         if ( @@abbr.include?(streettypeu))
           done = true
