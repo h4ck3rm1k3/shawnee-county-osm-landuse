@@ -4,7 +4,7 @@ require 'cgi'
 require 'open-uri'
 require 'facets/string/titlecase'
 
-@datadir = "jefferson"
+@datadir = "jefferson/"
 
 def cache(street, url )
   local_filename=@datadir + street
@@ -25,6 +25,37 @@ def cache(street, url )
     return html
   end
 end
+
+
+#    http://www.jefferson.kansasgis.com/Map/QuickMap.aspx
+#    POST
+#Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8Accept-Encoding:gzip, deflateAccept-Language:en-us,en;q=0.5Connection:keep-aliveHost:www.jefferson.kansasgis.comReferer:http://www.jefferson.kansasgis.com/Map/QuickMap.aspxUser-Agent:Mozilla/5.0 (X11; Linux x86_64; rv:10.0.12) Gecko/20100101 Firefox/10.0.12 Iceweasel/10.0.12
+# AgricultureInformation_AccordionExtender_ClientState:-1
+# AppraisedInformation_AccordionExtender_ClientState:-1
+# DeedInformation_AccordionExtender_ClientState:-1
+# DwellingInformation_AccordionExtender_ClientState:-1
+# GeneralInformation_AccordionExtender_ClientState:-1
+# MarketLandInformation_AccordionExtender_ClientState:-1
+# OtherImprovementComponentsInformation_AccordionExtender_ClientState:-1
+# OtherImprovementsInformation_AccordionExtender_ClientState:-1
+# OwnerInformation_AccordionExtender_ClientState:
+# SalesInformation_AccordionExtender_ClientState:-1
+# TaxDetailInformation_AccordionExtender_ClientState:-1
+# #__EVENTARGUMENT:
+# #__EVENTTARGET:
+# #__EVENTVALIDATION:***
+# __VIEWSTATE:***
+# btnSubmit:
+# Searchpropertyclassddl:
+# rangeddl:
+# secddl:
+# townshipddl:
+# txtOwner:
+# txtPropAdd:topeka
+# txtPropAddNum:
+# txtPropZip:
+# txtparcelid:
+# txtquickref:
 
 def GetPid (pid)
   url = 'http://gis.publicaccessnow.com/arcgis/rest/services/JeffersonKs/JeffersonKsDynamic/MapServer/0/query?f=json&where=PID%20IN%20(%27' + pid + '%27)&returnGeometry=true&spatialRel=esriSpatialRelIntersects&outFields=PID&outSR=3857&callback=dojo.io.script.jsonp_dojoIoScript5._jsonpCallback'
