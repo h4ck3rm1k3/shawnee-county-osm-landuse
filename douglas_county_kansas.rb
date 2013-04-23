@@ -300,17 +300,6 @@ class Node  < BaseNode
     ios.write("<nd ref=\"#{@id}\" />\n")
   end
 
-  def landuse 
-  end
-
-  def church 
-
-  end
-
-  def school
-
-  end
-
   def initialize(lat,lon)
     super()
     @lat=lat
