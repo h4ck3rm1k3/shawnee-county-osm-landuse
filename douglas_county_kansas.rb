@@ -198,24 +198,24 @@ class BaseNode
     @@bearing['W'] = 	'West'
 
     @@infields = %w{    
+JOINPIN
+APLINK
 situs
 owner1
-owner2
-owner3
-address
-city
-state
-zip
-JOINPIN
 plate
-school
-SYSCALACRES
 OBJECTID
-Shape.area
-Shape.len
+
 
 
 }
+#zip 
+#address
+#city
+#owner2
+#owner3
+
+#Shape.area Shape.len SYSCALACRES school
+
 
     @@fields = %w{    
 addr:city
@@ -364,8 +364,7 @@ class Property  < Way
     @middle=  Node.new(sumlat/@nodes.size,sumlon/@nodes.size)    
 
     @middle.setattributes( @attributes)
-    @middle.landuse
-    
+
   end
 
 
@@ -442,9 +441,9 @@ class Property  < Way
     print "address:"+ @attributes['addr:street'] + "\n"
 
 
-    @attributes['addr:city']= @attributes["data:city"].capitalize()
-    @attributes['addr:state']=@attributes["data:state"].capitalize()
-    @attributes['addr:postcode']=@attributes["data:zip"].capitalize()
+#    @attributes['addr:city']= @attributes["data:city"].capitalize()
+#    @attributes['addr:state']=@attributes["data:state"].capitalize()
+#    @attributes['addr:postcode']=@attributes["data:zip"].capitalize()
     @attributes['addr:country']="US"
     
   end 
@@ -463,12 +462,15 @@ class GIS
       Dir.mkdir(@datadir, 0700) #=> 0
     end
     if File.exists?(local_filename)
+      print "Local :"+ local_filename + "\n"
       File.open(local_filename, "r") {|f|
         html= f.read
         return html
       }
     else      
+      print "going to open:"+ url + "\n"
       html  = open(url) {|f| f.read }      
+      print "got :" + html + "\n"
       File.open(local_filename, 'w') {|f| f.write(html) }
       return html
     end
@@ -513,10 +515,23 @@ class GIS
     fields3 = Property::getfields()
     fieldstr = CGI::escape(fields3.join(','))
 
+    base = 'https://dgco.douglas-county.com/ArcGIS/rest/services/External/iparcel/MapServer/0/query'
+    #ESRI:102677
+    #NAD 1983 StatePlane Kansas North FIPS 1501 Feet
 
 
-    url = "https://dgco.douglas-county.com/ArcGIS/rest/services/Internet/iparcel/MapServer/0/query" \
-    "?spatialRel=esriSpatialRelIntersects"  +
+    #       https://dgco.douglas-county.com/ArcGIS/rest/services/External/iparcel/MapServer/0/query
+    #?spatialRel=esriSpatialRelIntersects&
+    #returnGeometry=true
+    #&f=json
+    #where=upper(situs) LIKE upper('%ash%')
+    #outFields=JOINPIN,owner1,plate,situs,APLINK,OBJECTID
+    #&outSR=4326
+
+
+
+    url = base + 
+      "?spatialRel=esriSpatialRelIntersects"  +
       "&where=situs%20Like%20%27%25" + qry + "%25%27" +
       "&returnGeometry=true"    +
       "&f=json" +
