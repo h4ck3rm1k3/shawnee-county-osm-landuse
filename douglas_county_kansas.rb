@@ -413,7 +413,7 @@ class Property  < Way
       streettype = paddressa.pop
 
       if (!streettype.nil?)
-        print "looking at " + streettype
+        print "Street type: " + streettype + ","
         streettypeu = streettype.upcase
         if ( @@abbr.include?(streettypeu))
           done = true
@@ -427,8 +427,6 @@ class Property  < Way
       end
 
     end
-
-#    print endings
 
     paddressa.push(streettype) 
 #    paddressa.push(blockname)
@@ -481,6 +479,8 @@ class GIS
 
   def process_prop(inprop)
     
+#    p inprop 
+
     fields3 = Property::getfields()
     data= inprop['attributes']
     p = Property.new()
@@ -550,7 +550,7 @@ class GIS
         }
       else
 #        p json
-        warn "nothing for " + street + "\n"
+        warn "nothing returned for " + street + "\n"
         return nil
       end
       
@@ -587,7 +587,7 @@ class GIS
   def simple (x)
     @properties.clear
     process([x])
-    if (@properties.count > 1)
+    if (@properties.count > 0)
 #      p "found:" + x.to_s + " count: "+@properties.count.to_s
       f = File.open(x + ".osm", 'w') 
       osmxml(f)
