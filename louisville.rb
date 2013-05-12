@@ -214,7 +214,9 @@ class BaseNode
   end
   
   def emitattr(ios)
-    
+#debug    print "emit :\n"
+#debug    print @attributes
+
     @attributes.keys.each {|x| 
       k=x
       v=@attributes[k]
@@ -322,19 +324,18 @@ class GIS
   end
 
 
+# takes the street name, sid and house number, the house number will be used in the tak.
+  def validate_address(street,sid,house_nr) 
 
-  def validate_address(sid,house)                       
-
-   
     url = 'http://ags2.lojic.org/ArcGIS/rest/services/External/Address/MapServer/exts/AddressRestSoe/ValidateAddress?' +
       "token=XByufiRcTeZJOARKuu3jJV2mNkBRSCD--D1YqeBZDCuEij4BnbkuzNL3QcE-l3mwAnR7Rs9CoaKo-Xp8j4Tsuw.."  +
-      '&Houseno='+ house.to_s + 
+      '&Houseno='+ house_nr.to_s + 
       '&SifID='+sid.to_s + 
       '&Apt='+
       '&f=json'+
       'callback=dojo.io.script.jsonp_dojoIoScript52._jsonpCallback'
 
-    html = cache  "house" + sid + "_house" + house ,url
+    html = cache  "house" + sid + "_house" + house_nr ,url
 
     json = JSON.parse(html)
 
@@ -353,9 +354,12 @@ class GIS
           lon= point.y  * Proj4::RAD_TO_DEG
 
           p = Node.new(lon,lat)
-          p.kv 'addr:housenumber', house["Housno"].to_s
+          p.kv 'addr:housenumber', house["Houseno"].to_s
+#<tag k="addr:housenumber" v="{"Houseno"=>4305, "Hafhouse"=>"", "Apt"=>"", "Roadname"=>"W MUHAMMAD ALI BLVD", "FullAddress"=>"4305 W MUHAMMAD ALI BLVD", "ZIPCode"=>"40212", "Sitecad"=>1110234909, "X"=>1188974.2500012815, "Y"=>280104.8749201}"/>
           p.kv 'addr:full', house["FullAddress"]
-          p.kv 'addr:street', house["Roadname"]
+          p.kv 'addr:suite', house["Apt"]
+          p.kv 'addr:Hafhouse', house["Hafhouse"]
+          p.kv 'addr:street', street
           p.kv 'addr:postcode', house["ZIPCode"]
           p.kv 'building', "yes"
 
@@ -367,110 +371,65 @@ class GIS
   end
 
 
-  def lookup_housenumbers(street, sid)    
-    url = "http://ags2.lojic.org/ArcGIS/rest/services/External/Address/MapServer/exts/AddressRestSoe/ValidateHouseNumber?Houseno=-1&SifID=" + sid.to_s +
-      "&token=XByufiRcTeZJOARKuu3jJV2mNkBRSCD--D1YqeBZDCuEij4BnbkuzNL3QcE-l3mwAnR7Rs9CoaKo-Xp8j4Tsuw.."  +
-      '&f=json&dojo.preventCache=1365987076181&callback=dojo.io.script.jsonp_dojoIoScript49._jsonpCallback'
+  def lookup_housenumbers(street, sid, number)    
+    ns= number.to_s
+    print "Check lookup_housenumbers :street" + street
+    print "sid" + sid.to_s
+    print "number" + ns + "\n"
+    validate_address(street,sid.to_s,ns)
 
-    html = cache street + "houses" + "",url
-
-    data= /jsonpCallback\(([^\)]+)\);$/.match(html)
-    html=data[1]
-   
-#    warn html
-
-    json = JSON.parse(html)
-    if json 
-      if json.include?('Candidates')
-        json['Candidates'].each{ |house_obj|
-         # warn "found : "
-          #p inprop
-
-          validate_address(sid.to_s,house_obj["Houseno"].to_s)
-        }
-      else
-#        p json
-        warn "nothing for " + street + "\n"
-        return nil
-      end     
-    end
-    return p
   end
 
-  def lookup(street) 
+# if you want to guess at them, use -1 for the from, to and step
+  def lookup(street,from_number,to_number,number_step) 
     if @properties.include?(street)
       return @properties[street]
     end
-    qry=URI::encode(street)
-
-    
-
+    qry=URI::encode(street) 
 #query the street name to get the SifID
     url = "http://ags2.lojic.org/ArcGIS/rest/services/External/Address/MapServer/exts/AddressRestSoe/ValidateStreetName?StreetName="+ qry + 
       "&token=XByufiRcTeZJOARKuu3jJV2mNkBRSCD--D1YqeBZDCuEij4BnbkuzNL3QcE-l3mwAnR7Rs9CoaKo-Xp8j4Tsuw.."  +
       '&f=json&dojo.preventCache=1365987076181&callback=dojo.io.script.jsonp_dojoIoScript49._jsonpCallback'
-
 # load the url
     html = cache street + "",url
-
 #convert jsonp into json
     data= /jsonpCallback\(([^\)]+)\);$/.match(html)
     html=data[1]
-
-    
-#    warn html
     json = JSON.parse(html)
     if json 
-# did we find any candidates?
-
-      if json.include?('Candidates')
-        
+      if json.include?('Candidates')        
         json['Candidates'].each{ |street_obj|
-          lookup_housenumbers(street, street_obj["SifID"])
+          $current_number = from_number
+          while $current_number < to_number do 
+            print "going to lookup "+ $current_number.to_s + "\n"
+            lookup_housenumbers(street, street_obj["SifID"],$current_number)
+            $current_number = $current_number + number_step
+          end
         }
       else
-#        p json
         warn "nothing for " + street + "\n"
         return nil
-      end
-      
+      end      
     end
-
-#    osmxml (ios)
-
     return p
-
-
   end
 
+# write the xml file
   def osmxml (ios)
     ios.write("<osm version=\"0.6\" >\n")
-#    p @properties
     @properties.each { |x| 
-#      p x 
       x.osmxml(ios) 
     }
     ios.write("</osm>\n")
   end
 
-
-  def process (roads )
-    found = 0
-    roads.flatten.each { 
-      |street|
-      p= lookup( street)
-    }
-
-    
-
-  end
-
-  def simple (x)
+  # look up this street and scan the house number from number to number with a step between them defined.
+  def simple (street,from_number,to_number,number_step)
     @properties.clear
-    process([x])
-
-      f = File.open("lousville" + x + ".osm", 'w') 
-      osmxml(f)
+    #process([x])
+    p= lookup( street,from_number,to_number,number_step)
+    f = File.open("lousville" + street + '_'+ from_number.to_s + '_' + to_number.to_s + '_' + number_step.to_s  + ".osm", 'w') 
+    osmxml(f)
 
   end
   
@@ -478,10 +437,18 @@ end
 
 g=GIS.new()
 
+street_name  = ARGV[0]
+from_number  = ARGV[1].to_i
+to_number    = ARGV[2].to_i
+number_step    = ARGV[3].to_i
+if (number_step == 0) 
+  print "number step must be non null\n"
+  exit
+end
+  
 
-ARGV.each { |x|
-  print x;
-  g.simple(x)
-  }
+print "going to process " + street_name
+g.simple(street_name,from_number,to_number,number_step)
+
 
 
