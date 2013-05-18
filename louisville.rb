@@ -428,7 +428,7 @@ class GIS
     @properties.clear
     #process([x])
     p= lookup( street,from_number,to_number,number_step)
-    f = File.open("lousville" + street + '_'+ from_number.to_s + '_' + to_number.to_s + '_' + number_step.to_s  + ".osm", 'w') 
+    f = File.open("louisville" + street + '_'+ from_number.to_s + '_' + to_number.to_s + '_' + number_step.to_s  + ".osm", 'w') 
     osmxml(f)
 
   end

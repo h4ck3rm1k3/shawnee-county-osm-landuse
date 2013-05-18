@@ -1,4 +1,4 @@
-
+require './Node'
 
 class Property  < Way
 
@@ -37,22 +37,6 @@ class Property  < Way
   end
 
   def osmxml (ios)
-    @attributes.keys.each {|x| 
-      k=x
-      v=@attributes[k]
-      if (!v.nil?)
-        emitkv ios, k, v
-      end
-    }
-    self.midpoint # calc the midpoint
-    if (@middle.nil?)
-      abort "midpoint not set"
-      else      
-      @middle.osmxml(ios)  #emit it
-    end
-  end
-
-  def osmxml_way (ios)
     @nodes.each { |x| x.osmxml(ios) }
     ios.write("<way id=\"#{@id}\" >\n")
     @attributes.keys.each {|x| 
