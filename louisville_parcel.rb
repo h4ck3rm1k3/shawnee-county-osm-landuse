@@ -50,7 +50,7 @@ class GIS
 
 
 
-  def process_prop(inprop2)
+  def process_prop(inprop3,inprop2,street)
     
 #    print "prop:"
 #    pp inprop
@@ -59,22 +59,52 @@ class GIS
 #    print "prop:results0"+ inprop["results"][0]+ "\n"
 #    print "prop:results0attr:"
 #    pp  inprop["results"][0]
+
     inprop=inprop2["results"][0]
+
+
+    house =inprop3["Candidates"][0]
+#{"ErrorMessage"=>"None",
+# "Candidates"=>
+#  [# {"Houseno"=>1529,
+    # "Hafhouse"=>"",
+    # "Apt"=>"",
+    # "Roadname"=>"GODDARD AVE",
+    # "FullAddress"=>"1529 GODDARD AVE",
+    # "ZIPCode"=>"40204",
+    # "Sitecad"=>1110195560,
+    # "X"=>1218283.625109449,
+    # "Y"=>270517.6250657737}]}
+   
+
 
 #      if (!v.nil? and v.length()  > 0 )
 #"results"=>[
 #{"layerId"=>3, "layerName"=>"Current Property Lines", "value"=>"016B00670000", "displayFieldName"=>"PARCEL ID NUMBER", 
-    #"attributes"=>{"REVISED ON"=>"12/5/2003", "PARCEL ID NUMBER"=>"016B00670000", "PARCEL TYPE"=>"Parcel", "BLOCK"=>"016B", "LOT"=>"0067", "SUBLOT"=>"0000", "LRSN"=>"61176", "UNIT COUNT"=>"0", "EFFECTIVE DATE"=>"8/30/2007"}, "geometryType"=>"esriGeometryPolygon", "geometry"=>{"spatialReference"=>{"wkid"=>2246}, "rings"=>[[[1210031.28125, 276656.126249999], [1210065, 276651.1875], [1210096.65625, 276646.626249999], [1210130.5, 276641.6875], [1210179.125, 276634.625], [1210199.62625, 276631.625], [1210209.50125, 276630.1875], [1210225.03125, 276627.9375], [1210225.53125, 276631.25], [1210248.5325, 276627.748750001], [1210250, 276627.522499993], [1210318.53125, 276616.875], [1210343.75, 276613], [1210368.31375, 276609.1875], [1210397.09375, 276604.75], [1210413.875, 276602.125], [1210436.40625, 276598.6875], [1210460.93875, 276594.875], [1210484.56375, 276591.251249999], [1210553.78, 276580.498750001], [1210547.21875, 276537.25], [1210544.78125, 276521.25], [1210542.28125, 276504.873750001], [1210539.75, 276488.1875], [1210536.96875, 276470], [1210534.03125, 276450.6875], [1210532.34375, 276439.625], [1210525, 276391.4375], [1210521.28125, 276367.0625], [1210515.1875, 276326.875], [1210512, 276305.936250001], [1210508.5625, 276283.4375], [1210508.5, 276283.125], [1210502.5625, 276244.1875], [1210498.0325, 276214.375], [1210496.28125, 276202.875], [1210299.34375, 276231.873750001], [1210300.65625, 276242.625], [1210250, 276250.420000002], [1210152.40625, 276265.4375], [1210123.09375, 276269.9375], [1210093.90625, 276274.4375], [1210049.5, 276281.251249999], [1209975.8125, 276292.5], [1209980.5, 276323.0625], [1209998.375, 276440.188749999], [1210004.5625, 276480.9375], [1210007.875, 276502.4375], [1210031.28125, 276656.126249999]]]}}]}./louisville_parcel.rb:311:in `process_prop': undefined method `[]' for nil:NilClass (NoMethodError)
+    #"attributes"=>{"REVISED ON"=>"12/5/2003", 
+    #"PARCEL ID NUMBER"=>"016B00670000", "PARCEL TYPE"=>"Parcel", "BLOCK"=>"016B", "LOT"=>"0067", "SUBLOT"=>"0000", "LRSN"=>"61176", "UNIT COUNT"=>"0", "EFFECTIVE DATE"=>"8/30/2007"}, "geometryType"=>"esriGeometryPolygon", "geometry"=>{"spatialReference"=>{"wkid"=>2246}, "rings"=>[[[1210031.28125, 276656.126249999], [1210065, 276651.1875], [1210096.65625, 276646.626249999], [1210130.5, 276641.6875], [1210179.125, 276634.625], [1210199.62625, 276631.625], [1210209.50125, 276630.1875], [1210225.03125, 276627.9375], [1210225.53125, 276631.25], [1210248.5325, 276627.748750001], [1210250, 276627.522499993], [1210318.53125, 276616.875], [1210343.75, 276613], [1210368.31375, 276609.1875], [1210397.09375, 276604.75], [1210413.875, 276602.125], [1210436.40625, 276598.6875], [1210460.93875, 276594.875], [1210484.56375, 276591.251249999], [1210553.78, 276580.498750001], [1210547.21875, 276537.25], [1210544.78125, 276521.25], [1210542.28125, 276504.873750001], [1210539.75, 276488.1875], [1210536.96875, 276470], [1210534.03125, 276450.6875], [1210532.34375, 276439.625], [1210525, 276391.4375], [1210521.28125, 276367.0625], [1210515.1875, 276326.875], [1210512, 276305.936250001], [1210508.5625, 276283.4375], [1210508.5, 276283.125], [1210502.5625, 276244.1875], [1210498.0325, 276214.375], [1210496.28125, 276202.875], [1210299.34375, 276231.873750001], [1210300.65625, 276242.625], [1210250, 276250.420000002], [1210152.40625, 276265.4375], [1210123.09375, 276269.9375], [1210093.90625, 276274.4375], [1210049.5, 276281.251249999], [1209975.8125, 276292.5], [1209980.5, 276323.0625], [1209998.375, 276440.188749999], [1210004.5625, 276480.9375], [1210007.875, 276502.4375], [1210031.28125, 276656.126249999]]]}}]}./louisville_parcel.rb:311:in `process_prop': undefined method `[]' for nil:NilClass (NoMethodError)
     data= inprop['attributes']
 
     p = Property.new()
-   data.keys.each { |x|
-      val = data[x]
-      k = x.downcase
-      k.sub(".","_")
-      k = "data:" + k         
-      p.kv( k, val.to_s)
-    }
+
+#<tag k="data:parcel id number" v="016B00670000"/>
+#<tag k="data:lrsn" v="61176"/>
+
+
+#    [''].keys.each { |x|
+    p.kv('jeffersonpva:parcel_id' ,  data['PARCEL ID NUMBER'])
+    p.kv('jeffersonpva:lrsl' ,  data['LRSN'])
+    p.kv('landuse', 'residential')
+ 
+#    pp house
+    p.kv 'addr:suite', house["Apt"]
+    p.kv 'addr:hafhouse', house["Hafhouse"]
+    p.kv 'addr:street', street
+    p.kv 'addr:postcode', house["ZIPCode"]
+    pp house
+    p.kv 'addr:housenumber', house["Houseno"].to_s
+   
+#    }
 
     geo= inprop['geometry']['rings'][0]
     geo.each { |x| 
@@ -86,7 +116,7 @@ class GIS
       p.addpoint(lon,lat)
     }
     p.closeway
-    #    p.cleanup
+#    p.cleanup
     @properties.push(p)
     #    pp p
   end
@@ -166,10 +196,9 @@ class GIS
         json['Candidates'].each{ |house|
 
           # lookup the parcel info
-          json = lookup_parcel_by_xy( house["X" ] ,house["Y" ]  )
+          json2 = lookup_parcel_by_xy( house["X" ] ,house["Y" ]  )
           
-
-          process_prop(json)
+          process_prop(json,json2,street)
         }
       end     
     end
@@ -243,7 +272,7 @@ class GIS
     @properties.clear
     #process([x])
     p= lookup( street,from_number,to_number,number_step)
-    f = File.open("louisville" + street + '_'+ from_number.to_s + '_' + to_number.to_s + '_' + number_step.to_s  + ".osm", 'w') 
+    f = File.open("louisville" + street + '_'+ from_number.to_s + '_' + to_number.to_s + '_' + number_step.to_s  + "_parcel.osm", 'w') 
     osmxml(f)
   end
   

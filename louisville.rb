@@ -356,7 +356,7 @@ class GIS
           p = Node.new(lon,lat)
           p.kv 'addr:housenumber', house["Houseno"].to_s
 #<tag k="addr:housenumber" v="{"Houseno"=>4305, "Hafhouse"=>"", "Apt"=>"", "Roadname"=>"W MUHAMMAD ALI BLVD", "FullAddress"=>"4305 W MUHAMMAD ALI BLVD", "ZIPCode"=>"40212", "Sitecad"=>1110234909, "X"=>1188974.2500012815, "Y"=>280104.8749201}"/>
-          p.kv 'addr:full', house["FullAddress"]
+#          p.kv 'addr:full', house["FullAddress"]
           p.kv 'addr:suite', house["Apt"]
           p.kv 'addr:Hafhouse', house["Hafhouse"]
           p.kv 'addr:street', street

@@ -4,7 +4,15 @@ class Property  < Way
 
 
   def kv (k,v)
+    if (v.nil?)
+      return
+    end
+    if (v == '')
+      return
+    end
+    
     @attributes[k]=v
+    
   end
 
   def addpoint (lat,lon)
