@@ -125,6 +125,27 @@ APLINK
     }
   end
 
+
+  def fetchHtml(agent, link,local_filename)
+    page = agent.get link
+    puts link
+    data = page.body
+    File.open(local_filename, 'w') {|f| f.write(data) }
+    doc = Nokogiri::HTML(data)  
+  end
+
+  def getTaxFromPinPlate(agent, pin, plate)
+    pin.gsub!('-','')
+    pin.gsub!('.','')
+    plate.gsub!(' ','')
+    year=2013
+    url = "http://douglas-county.com/online_services/valuestaxes/results.asp?Pin=#{pin}&Plate=#{plate}&DisplayYear=#{year}"
+    filename = @datadir + "#{pin}_#{plate}_#{year}"
+    print "filename",filename,"\n"
+    #print  @datadir + '#{@pin}_#{@plate}_#{@year}'
+    fetchHtml agent, url, filename
+  end
+
   def simple (x)
     @properties.clear
     process([x])
@@ -134,13 +155,17 @@ APLINK
       @properties.each { |d| 
         #pp x 
         situs = d.attributes["data:situs"]
+        pid = d.attributes["data:pid"]
+        pin = d.attributes["data:joinpin"]
+        plate = d.attributes["data:plate"]
+        print pid
         #        p situs 
         house = situs.match('^(\d+)')
         #        pp house
         hn = house[0]
-#        print x + "|"+ hn.to_s + "\n"
-        getTaxInfo(agent,page,x,hn) 
-        
+        print "getTaxInfo Street:" + x + "House NUmber"+ hn.to_s, " pid: ", pid, " pin: ", pin, " plate: ", plate ,"\n"
+        #getTaxInfo(agent,page,x,hn) 
+        getTaxFromPinPlate(agent, pin, plate)
       }
 
     end
@@ -237,7 +262,6 @@ APLINK
       data=check_cache(key)
       local_filename=@datadir + key
 
-
       if (data.nil?) 
         page = agent.get link
         data = page.body
@@ -254,20 +278,46 @@ APLINK
     end
   end
 
+  def printForm(page)
+    page2.forms.each {
+      |frm| 
+      print "each FORM NAME:", frm.name, "\n"
+      frm.fields.each { |f| 
+        print "Field: ", f.name , "\n"
+      }
+    }    
+  end
+
   def getTaxInfo(agent,page, street,house) 
-    form = page.form_with(:action => "/online_services/valuestaxes/source.asp")
-    form['hfSearchType'] = 'Address'
-    form['hfFormB'] = 'True'
-    form['StreetNbr'] =  house 
-    form['StreetName'] = street
+    form = page.form_with(:name => "formA",
+                          :action => "/online_services/valuestaxes/source.asp")
+                          #http://www.douglas-county.com/online_services/valuestaxes/source.asp
+    #form.fields.each { |f| puts f.name }
+    #form['rbPropertyType'] = 'Personal'
+    form['hfShowPropertyTypeForm'] = 'True'
+    form['selectSearchType']='RealAddress'
+    print "selected FORM NAME:", form.name, "\n"
+    form.fields.each { |f| 
+      print "Field:",f.name,"\n"
+    }
+  
+    page2 = agent.submit form
+    form2 = page2.form_with(
+                          :name => "formRealAddressSearch",
+                          :action => "/online_services/valuestaxes/source.asp"
+                          )
+    form2['hfSearchTypeValue'] = 'RealAddress'
+    form2['hfShowSearchDetailsForm'] = 'True'
+    form2['txtRealStreetNbr'] =  house 
+    form2['txtRealStreetNameStreetName'] = street
     key = "lawrence" + street + house.to_s
     #
-    searchdata=check_cache(key + "search")
+    searchdata=nil # check_cache(key + "search")
     search_local_filename=@datadir + key + "search"
     if (searchdata.nil?) 
-      page = agent.submit form
-      searchdata = page.body
-      #    puts "writing" + searchdata
+      page3 = agent.submit form2
+      searchdata = page3.body
+      puts "writing" + searchdata
       print "wrote the page: "  + search_local_filename + "\n"
       File.open(search_local_filename, 'w') {|f| f.write(searchdata) }
     else
