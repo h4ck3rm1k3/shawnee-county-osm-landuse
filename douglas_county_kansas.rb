@@ -538,7 +538,7 @@ class GIS
       "&outSR=4326" +
       "&outFields=" + fieldstr 
 
-#    print "\n" + url + "\n"
+    print "\n" + url + "\n"
     html = cache street,url
     json = JSON.parse(html)
     if json 

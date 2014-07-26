@@ -38,24 +38,21 @@ class GIS
     end
   end
 
+#check https://dgco.douglas-county.com/arcgis/rest/services/External/iparcel/MapServer/0?f=pjson
   def getfields ()
-    x =  %w{    
-situs
-owner1
-owner2
-owner3
-address
-city
-state
-zip
-JOINPIN
-plate
-school
-SYSCALACRES
+    x =  %w{  
 OBJECTID
-Shape.area
-Shape.len
+JOINPIN
+owner1
+plate
+PID
+Quickrefid
+situs
+APLINK
 }.flatten
+#Shape
+
+
     return x 
 
   end
@@ -84,7 +81,13 @@ Shape.len
     pp fields3
     fieldstr = CGI::escape(fields3.join(','))
 
-    url = "https://dgco.douglas-county.com/ArcGIS/rest/services/Internet/iparcel/MapServer/0/query" \
+
+          #https://dgco.douglas-county.com/arcgis/rest/services/External/iparcel/MapServer/0/query
+    #https://dgco.douglas-county.com/ArcGIS/rest/services/External/iparcel/MapServer/0/query?spatialRel=esriSpatialRelIntersects&where=situs%20Like%20%27%2510%25%27&returnGeometry=true&f=json&outSR=4326&outFields=OBJECTID%2CJOINPIN%2Cowner1%2Cplate%2CPID%2CQuickrefid%2Csitus%2CAPLINK%2CShape
+    #https://dgco.douglas-county.com/ArcGIS/rest/services/External/iparcel/MapServer/0/query?spatialRel=esriSpatialRelIntersects&where=situs%20Like%20%27%2510%25%27&returnGeometry=true&f=json&outSR=4326&outFields=OBJECTID%2CJOINPIN%2Cowner1%2Cplate%2CPID%2CQuickrefid%2Csitus%2CAPLINK%2CShape
+    #https://dgco.douglas-county.com/ArcGIS/rest/services/External/iparcel/MapServer/0/query?spatialRel=esriSpatialRelIntersects&where=
+
+    url = "https://dgco.douglas-county.com/ArcGIS/rest/services/External/iparcel/MapServer/0/query" \
     "?spatialRel=esriSpatialRelIntersects"  +
       "&where=situs%20Like%20%27%25" + qry + "%25%27" +
       "&returnGeometry=true"    +
@@ -92,10 +95,12 @@ Shape.len
       "&outSR=4326" +
       "&outFields=" + fieldstr 
 
-    #    print "\n" + url + "\n"
+    print "\nURL:" + url + "\n"
     html = cache street,url
+    #print html
     json = JSON.parse(html)
     if json 
+      #print json 
       if json.include?('features')
         json['features'].each{ |inprop|
           #          warn "found : "
