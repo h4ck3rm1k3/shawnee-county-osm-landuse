@@ -5,15 +5,17 @@ require 'filecache'
 
 def layer(agent, cache, url, layer_url)
   jsonurl = layer_url + '/?f=pjson'
-  old =  cache.get(url)
+  old =  cache.get(layer_url)
   if (old.nil?) 
     page = agent.get jsonurl
     result_hash = JSON.parse(page.body)
-    puts "fetched layer",url
+    puts "fetched layer",layer_url
     #pp result_hash
-    cache.set(url, result_hash)
+    cache.set(layer_url, result_hash)
   else
-    puts "got old",url
+    #puts "got old",url
+    puts "fetched old layer",layer_url
+    result_hash = old
   end  
 end 
 
@@ -25,11 +27,12 @@ def services(agent,cache,  url)
     page = agent.get jsonurl
     result_hash = JSON.parse(page.body)
   else
-    puts "got old2",url
+    #puts "got old2",url
     result_hash = old
   end  
 
   puts "process services ", url
+  #pp result_hash
   if result_hash['layers']
     result_hash['layers'].each { |x| 
       id = x['id']
@@ -49,7 +52,7 @@ def folders(agent,cache,  base, url)
     page = agent.get jsonurl
     result_hash = JSON.parse(page.body)
   else
-    puts "got old3",url
+    #puts "got old3",url
     result_hash = old
   end
   result_hash['folders'].each { |x| 
