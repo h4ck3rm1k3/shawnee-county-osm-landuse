@@ -3,12 +3,47 @@ require 'json'
 require 'pp'
 require 'filecache'
 require 'open-uri'
+require 'mongo'
+
+include Mongo
+
+mongo_client = MongoClient.new("localhost")
+db = mongo_client.db("ersi")
+$coll = db.collection("ersi")
+
+def clean(result_hash)
+  if result_hash.is_a? String    
+    #print result_hash, "\n"
+    
+    return result_hash
+  elsif result_hash.is_a? Array 
+    ret = []
+    result_hash.each do |item|
+      ret.push(clean(item))
+    end
+    #print ret
+    return ret
+  elsif result_hash.is_a? Hash
+    nh = Hash.new()
+    result_hash.keys.each do |itemk|
+      ns= itemk.gsub(".","_")
+      item = result_hash[itemk]
+      #print itemk,ns,"\n"
+      nh[ns]=clean (item)                
+    end
+    #print nh
+    return nh    
+  else
+    return result_hash
+  end
+end
 
 def cache_query(agent, cache, jsonurl)
-  print "Going to get: ",jsonurl
+  print "\nGoing to get: ",jsonurl,"\n"
   old = nil
-  #old =  cache.get(jsonurl)
+  old =  cache.get(jsonurl)
   if (old.nil?) 
+    return
     page = agent.get jsonurl
     print "BEGINJSON\n", page.body, "\nENDJSON", "\n"
     result_hash = JSON.parse(page.body)
@@ -16,6 +51,17 @@ def cache_query(agent, cache, jsonurl)
     cache.set(jsonurl, result_hash)
   else
     result_hash = old
+    #pp "Before",result_hash
+    result_hash = clean(result_hash)
+    #pp "Cleaned",result_hash
+    #body = JSON.dump(result_hash)
+    $coll.insert(
+                 {
+                  'url' => jsonurl,
+                  'data' => result_hash
+                }
+                )
+    #print "BEGINJSON\n", body, "\nENDJSON", "\n"
   end  
   return result_hash
 end
@@ -88,6 +134,10 @@ def folders(agent,cache,  base, url)
 
   result_hash = cache_query(agent,cache, jsonurl)
 
+  if (result_hash.nil?)
+    print "NULL"
+    return
+  end
   print "Folder", result_hash.keys(), "\n"
 
   result_hash['folders'].each { |x| 
@@ -107,7 +157,7 @@ def main()
   agent = Mechanize.new
   cache = FileCache.new("ersi",".")
   baseurl=ARGV[0]
-  print "starting"+baseurl
+  print "starting: "+baseurl
   folders(agent,cache, baseurl, baseurl)
 end
 
