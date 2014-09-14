@@ -5,13 +5,14 @@ require 'filecache'
 require 'open-uri'
 
 def cache_query(agent, cache, jsonurl)
-  print "Going to get",jsonurl
+  print "Going to get: ",jsonurl
   old = nil
   #old =  cache.get(jsonurl)
   if (old.nil?) 
     page = agent.get jsonurl
+    print "BEGINJSON\n", page.body, "\nENDJSON", "\n"
     result_hash = JSON.parse(page.body)
-    print "fetched url:",jsonurl,"\n"
+    print "fetched url: ",jsonurl,"\n"
     cache.set(jsonurl, result_hash)
   else
     result_hash = old
@@ -25,7 +26,8 @@ def query_all_data(agent, cache, url, names)
   fields = URI::encode(names.join(","))
   query_count = url + '/query?' + where + "&returnCountOnly=false&f=json&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&outFields="+ fields + "&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false"
   json= cache_query(agent,cache, query_count)
-  pp "Query",query_count,"JSON",json
+  pp "Query",query_count
+  #"JSON",json
 end 
 
 def query_count(agent,cache, url)
