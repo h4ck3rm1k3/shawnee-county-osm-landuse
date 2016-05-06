@@ -387,6 +387,7 @@ class Property  < Way
       abort('no address')
     end
     paddress=@attributes["data:hadd"].capitalize()
+    paddress.gsub!("&"," and ")
     @attributes['addr:full']=paddress
 
     block = ""
@@ -428,6 +429,7 @@ class Property  < Way
     @attributes['addr:street']=paddressa.join(" ") # the rest
     @attributes['addr:suite']=endings.join(" ") # the rest
 
+    #@attributes['addr:street'].sub("&"," and ")
     print "house number:"+ housenumberorbearing + "\t"
     print "address:"+ @attributes['addr:street'] + "\n"
 
@@ -518,7 +520,7 @@ class GIS
       "&returnGeometry=true"    +
       "&f=json" +
       "&outSR=4326" +
-      "&outFields=" + fieldstr 
+      "&outFields=*" # + fieldstr 
 
     print "\n" + url + "\n"
     html = cache street,url
