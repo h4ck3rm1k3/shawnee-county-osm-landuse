@@ -1,3 +1,5 @@
+print "school,street,number\n"           
+
 ARGV.each { |x|
   File.open(x, "r") {
     |f|
@@ -12,10 +14,10 @@ ARGV.each { |x|
       even = cols[4]
       if from == "" 
         #print "skip", l, "\n"
-        print school, "\t", street, "\t*\n"           
+        print school, ",", street, ",*\n"           
       else
         if to == "" 
-          print "skip", l, "\n"
+          #print "skip", l, "\n"
         else
           from = from.to_i
           to = to.to_i
@@ -24,9 +26,9 @@ ARGV.each { |x|
             #print "Check1",even,from,to, "\n"
             #print "Check",from..to, "\n"
             if even == "" 
-              #print school, "\t", street, "\tALL\n"
+              #print school, ",", street, ",ALL\n"
               for n in (from .. to) do
-                  print school, "\t", street, "\t", n , "\n"           
+                  print school, ",", street, ",", n , "\n"           
               end
               
             elsif  even == 'even'
@@ -35,14 +37,14 @@ ARGV.each { |x|
                 r = (n % 2)
                 #print n % 2 , "\n"
                 if r == 0
-                  print school, "\t", street, "\t", n , "\n"           
+                  print school, ",", street, ",", n , "\n"           
                 else
-                  #print "Odd",r, school, "\t", street, "\t", n , "\n"           
+                  #print "Odd",r, school, ",", street, ",", n , "\n"           
                 end
               end
             end
           else
-            print "skip", l, "\n"           
+            #print "skip", l, "\n"           
           end
         end
       end
