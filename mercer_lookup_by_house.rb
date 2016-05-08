@@ -217,6 +217,7 @@ addr:street
 addr:housenumber
 addr:suite
 source
+school
 }
   end
 
@@ -583,19 +584,17 @@ class GIS
     roads.flatten.each { 
       |street|
       p= lookup( street)
+      return p
     }
   end
 
   def simple (x)
-    process([x.upcase])
+    return process([x.upcase])
   end
 
   def emit (x)
     #p "found:" + x.to_s + " count: "+@properties.count.to_s
 
-    @properties.each { |y| 
-      y.setkv('source',x)
-    }
     
     if (@properties.count > 0)
       p "going to output" + x + ".osm"
@@ -628,50 +627,67 @@ ARGV.each { |x|
     data = f.read
     lines = data.split("\n")
     lines.each { |l|
-      cols = l.split(",")
+      cols = l.split(",")      
       school = cols[0]
       street = cols[1]
       from = cols[2]
       to = cols[3]
       even = cols[4]
-      if from == "" 
-        #print "skip", l, "\n"
-        g.simple(street)           
-      else
-        if to == "" 
-          #print "skip", l, "\n"
-        else
-          from = from.to_i
-          to = to.to_i
+      p = nil
 
-          if from < to 
-            #print "Check1",even,from,to, "\n"
-            
-            if even == "" 
-              #print school, ",", street, ",ALL\n"
-              print "Check from ",from, "To:", to, "\n"
-              for n in (from .. to) do
-                g.simple(n.to_s + " " + street)   
-              end
-              
-            elsif  even == 'even'
-              #print "Even\n"
-              for n in (from .. to) do
-                r = (n % 2)
-                #print n % 2 , "\n"
-                if r == 0
-                  #print school, ",", street, ",", n , "\n"           
-                  g.simple(n.to_s + " " + street)   
-                else
-                  #print "Odd",r, school, ",", street, ",", n , "\n"           
-                end
-              end
-            end
-          else
-            #print "skip", l, "\n"           
-          end
-        end
+      steps=street.split(%r{\s})
+      print "Check1",steps,"\n"
+      if (steps.length()  > 1 )
+        simple = steps[0..-2].join(" ")
+        print "Check",simple,"\n"
+        p = g.simple(simple)       
       end
+      #p = g.simple(street)           
+      
+      # if False
+      #   if from == "" 
+      #     #print "skip", l, "\n"
+      #     p = g.simple(street)           
+      #   else
+      #     if to == "" 
+      #       #print "skip", l, "\n"
+      #     else
+      #       from = from.to_i
+      #       to = to.to_i
+
+      #       if from < to 
+      #         #print "Check1",even,from,to, "\n"
+              
+      #         if even == "" 
+      #           #print school, ",", street, ",ALL\n"
+      #           print "Check from ",from, "To:", to, "\n"
+      #           for n in (from .. to) do
+      #             p = g.simple(n.to_s + " " + street)   
+      #           end
+                
+      #         elsif  even == 'even'
+      #           #print "Even\n"
+      #           for n in (from .. to) do
+      #             r = (n % 2)
+      #             #print n % 2 , "\n"
+      #             if r == 0
+      #               #print school, ",", street, ",", n , "\n"           
+      #               p= g.simple(n.to_s + " " + street)   
+      #             else
+      #               #print "Odd",r, school, ",", street, ",", n , "\n"           
+      #             end
+      #           end
+      #         end
+      #       else
+      #         #print "skip", l, "\n"           
+      #       end
+      #     end
+      #   end
+      # end
+      if p
+        p.setkv('school',school)
+      end
+
     }
   }  
   #print "X",x, "\n"
