@@ -14,176 +14,201 @@ class LandUse
 end
 
 class BaseNode 
+
+  def self.load_abbr(k,v)
+    @@abbr[k.upcase ]=v.upcase
+    @@rabbr[v.upcase ]=k.upcase
+  end
+
+  def self.lookup_abbr(k)
+    e = k.upcase
+    if ( @@rabbr.include?( e))
+      e = @@rabbr[e]
+    end
+
+    if ( @@abbr.include?( e))
+      return e
+    else
+      print "Missing", e, "\n"
+    end
+
+    
+  end
+
   def self.initfields ()
+
     @@abbr= Hash.new
-    @@abbr['AL'] = 	'Alley'
-    @@abbr['ALY'] = 'ALLEY'
-    @@abbr['ANX'] = 'ANNEX'
-    @@abbr['APT'] = 'APARTMENT'
-    @@abbr['ARC'] = 'ARCADE'
-    @@abbr['AVE'] = 	'Avenue'
-    @@abbr['AVE'] = 'AVENUE'
-    @@abbr['BCH'] = 'BEACH'
-    @@abbr['BG'] = 'BURG'
-    @@abbr['BLDG'] = 'BUILDING'
-    @@abbr['BLF'] = 'BLUFF'
-    @@abbr['BLVD'] = 'BOULEVARD'
-    @@abbr['BLVD'] = 'Boulevard'
-    @@abbr['BND'] = 'BEND'
-    @@abbr['BR'] = 'BRANCH'
-    @@abbr['BRG'] = 'BRIDGE'
-    @@abbr['BRK'] = 'BROOK'
-    @@abbr['BSMT'] = 'BASEMENT'
-    @@abbr['BTM'] = 'BOTTOM'
-    @@abbr['BYP'] = 'BYPASS'
-    @@abbr['BYU'] = 'BAYOU'
-    @@abbr['CIR'] = 	'Circle'
-    @@abbr['CIR'] = 'CIRCLE'
-    @@abbr['CLB'] = 'CLUB'
-    @@abbr['CLFS'] = 'CLIFF'
-    @@abbr['CLFS'] = 'CLIFFS'
-    @@abbr['COR'] = 'CORNER'
-    @@abbr['CORS'] = 'CORNERS'
-    @@abbr['CP'] = 'CAMP'
-    @@abbr['CPE'] = 'CAPE'
-    @@abbr['CRES'] = 'CRESCENT'
-    @@abbr['CRK'] = 'CREEK'
-    @@abbr['CRSE'] = 'COURSE'
-    @@abbr['CSWY'] = 'CAUSEWAY'
-    @@abbr['CT'] = 	'Court'
-    @@abbr['CT'] = 'COURT'
-    @@abbr['CTR'] = 'CENTER'
-    @@abbr['CTS'] = 'COURTS'
-    @@abbr['CV'] = 'COVE'
-    @@abbr['CYN'] = 'CANYON'
-    @@abbr['DEPT'] = 'DEPARTMENT'
-    @@abbr['DL'] = 'DALE'
-    @@abbr['DM'] = 'DAM'
-    @@abbr['DR'] = 	'Drive'
-    @@abbr['DR'] = 'DRIVE'
-    @@abbr['DV'] = 'DIVIDE'
-    @@abbr['EST'] = 'ESTATE'
-    @@abbr['EXPY'] = 'EXPRESSWAY'
-    @@abbr['EXT'] = 'EXTENSION'
-    @@abbr['FL'] = 'FLOOR'
-    @@abbr['FLD'] = 'FIELD'
-    @@abbr['FLDS'] = 'FIELDS'
-    @@abbr['FLS'] = 'FALLS'
-    @@abbr['FLT'] = 'FLAT'
-    @@abbr['FRD'] = 'FORD'
-    @@abbr['FRG'] = 'FORGE'
-    @@abbr['FRK'] = 'FORK'
-    @@abbr['FRKS'] = 'FORKS'
-    @@abbr['FRNT'] = 'FRONT'
-    @@abbr['FRST'] = 'FOREST'
-    @@abbr['FRY'] = 'FERRY'
-    @@abbr['FT'] = 'FORT'
-    @@abbr['FWY'] = 'FREEWAY'
-    @@abbr['GDNS'] = 'GARDEN'
-    @@abbr['GDNS'] = 'GARDENS'
-    @@abbr['GLN'] = 'GLEN'
-    @@abbr['GRN'] = 'GREEN'
-    @@abbr['GRV'] = 'GROVE'
-    @@abbr['GTWY'] = 'GATEWAY'
-    @@abbr['HBR'] = 'HARBOR'
-    @@abbr['HL'] = 'HILL'
-    @@abbr['HLS'] = 'HILLS'
-    @@abbr['HNGR'] = 'HANGER'
-    @@abbr['HOLW'] = 'HOLLOW'
-    @@abbr['HTS'] = 'HEIGHTS'
-    @@abbr['HVN'] = 'HAVEN'
-    @@abbr['HWY'] = 	'Highway'
-    @@abbr['INLT'] = 'INLET'
-    @@abbr['IS'] = 'ISLAND'
-    @@abbr['ISS'] = 'ISLANDS'
-    @@abbr['JCT'] = 'JUNCTION'
-    @@abbr['KNLS'] = 'KNOLL'
-    @@abbr['KNLS'] = 'KNOLLS'
-    @@abbr['KY'] = 'KEY'
-    @@abbr['LBBY'] = 'LOBBY'
-    @@abbr['LCKS'] = 'LOCK'
-    @@abbr['LCKS'] = 'LOCKS'
-    @@abbr['LDG'] = 'LODGE'
-    @@abbr['LF'] = 'LOAF'
-    @@abbr['LGT'] = 'LIGHT'
-    @@abbr['LK'] = 'LAKE'
-    @@abbr['LKS'] = 'LAKES'
-    @@abbr['LN'] = 	'Lane'
-    @@abbr['LN'] = 'LANE'
-    @@abbr['LNDG'] = 'LANDING'
-    @@abbr['LOWR'] = 'LOWER'
-    @@abbr['MDWS'] = 'MEADOW'
-    @@abbr['MDWS'] = 'MEADOWS'
-    @@abbr['ML'] = 'MILL'
-    @@abbr['MLS'] = 'MILLS'
-    @@abbr['MNR'] = 'MANOR'
-    @@abbr['MSN'] = 'MISSION'
-    @@abbr['MT'] = 'MOUNT'
-    @@abbr['MTN'] = 'MOUNTAIN'
-    @@abbr['NCK'] = 'NECK'
-    @@abbr['OFC'] = 'OFFICE'
-    @@abbr['ORCH'] = 'ORCHARD'
-    @@abbr['PARK'] = 	'Park'
-    @@abbr['PH'] = 'PENTHOUSE'
-    @@abbr['PKWY'] = 'PARKWAY'
-    @@abbr['PL'] = 	'Place'
-    @@abbr['PL'] = 'PLACE'
-    @@abbr['PLN'] = 'PLAIN'
-    @@abbr['PLNS'] = 'PLAINS'
-    @@abbr['PLZ'] = 'PLAZA'
-    @@abbr['PNES'] = 'PINE'
-    @@abbr['PNES'] = 'PINES'
-    @@abbr['PR'] = 'PRAIRIE'
-    @@abbr['PRT'] = 'PORT'
-    @@abbr['PT'] = 'POINT'
-    @@abbr['RADL'] = 'RADIAL'
-    @@abbr['RD'] = 'ROAD'
-    @@abbr['RD'] = 'Road'
-    @@abbr['RDG'] = 'RIDGE'
-    @@abbr['RIV'] = 'RIVER'
-    @@abbr['RM'] = 'ROOM'
-    @@abbr['RNCH'] = 'RANCH'
-    @@abbr['RPDS'] = 'RAPID'
-    @@abbr['RPDS'] = 'RAPIDS'
-    @@abbr['RST'] = 'REST'
-    @@abbr['SHL'] = 'SHOAL'
-    @@abbr['SHLS'] = 'SHOALS'
-    @@abbr['SHR'] = 'SHORE'
-    @@abbr['SHRS'] = 'SHORES'
-    @@abbr['SMT'] = 'SUMMIT'
-    @@abbr['SPC'] = 'SPACE'
-    @@abbr['SPG'] = 'SPRING'
-    @@abbr['SPGS'] = 'SPRINGS'
-    @@abbr['SQ'] = 	'Square'
-    @@abbr['SQ'] = 'SQUARE'
-    @@abbr['ST'] = 	'Street'
-    @@abbr['STA'] = 'STATION'
-    @@abbr['STE'] = 'SUITE'
-    @@abbr['STR'] = 	'Street'
-    @@abbr['STRA'] = 'STRAVENUE'
-    @@abbr['STRM'] = 'STREAM'
-    @@abbr['TER'] = 	'Terrace'
-    @@abbr['TER'] = 'TERRACE'
-    @@abbr['TPKE'] = 'TURNPIKE'
-    @@abbr['TRAK'] = 'TRACK'
-    @@abbr['TRCE'] = 'TRACE'
-    @@abbr['TRFY'] = 'TRAFFICWAY'
-    @@abbr['TRL'] = 'TRAIL'
-    @@abbr['TRLR'] = 'TRAILER'
-    @@abbr['TUNL'] = 'TUNNEL'
-    @@abbr['UN'] = 'UNION'
-    @@abbr['UPPR'] = 'UPPER'
-    @@abbr['VIA'] = 'VIADUCT'
-    @@abbr['VIS'] = 'VISTA'
-    @@abbr['VL'] = 'VILLE'
-    @@abbr['VLG'] = 'VILLAGE'
-    @@abbr['VLY'] = 'VALLEY'
-    @@abbr['VW'] = 'VIEW'
-    @@abbr['WAY'] = 'WAY'
-    @@abbr['WLS'] = 'WELL'
-    @@abbr['WLS'] = 'WELLS '
-    @@abbr['XING'] = 'CROSSING'
-    @@abbr['road'] = 'Road'
+    @@rabbr= Hash.new
+
+    load_abbr('AL','Alley')
+    load_abbr('ALY','ALLEY')
+    load_abbr('ANX','ANNEX')
+    load_abbr('APT','APARTMENT')
+    load_abbr('ARC','ARCADE'  )
+    load_abbr('AVE','AVENUE')
+    load_abbr('BCH','BEACH')
+    load_abbr('BG','BURG')
+    load_abbr('BLDG','BUILDING')
+    load_abbr('BLF','BLUFF')
+    load_abbr('BLD','BOULEVARD')
+    #load_abbr('BLVD','BOULEVARD')
+    load_abbr('BND','BEND')
+    load_abbr('BR','BRANCH')
+    load_abbr('BRG','BRIDGE')
+    load_abbr('BRK','BROOK')
+    load_abbr('BSMT','BASEMENT')
+    load_abbr('BTM','BOTTOM')
+    load_abbr('BYP','BYPASS')
+    load_abbr('BYU','BAYOU')
+    load_abbr('CR','CIRCLE')
+    load_abbr('CIR','CIRCLE')
+    load_abbr('CLB','CLUB')
+    load_abbr('CLFS','CLIFF')
+    load_abbr('CLFS','CLIFFS')
+    load_abbr('COR','CORNER')
+    load_abbr('CORS','CORNERS')
+    load_abbr('CP','CAMP')
+    load_abbr('CPE','CAPE')
+    load_abbr('CRES','CRESCENT')
+    load_abbr('PT','PATH')
+    load_abbr('CRK','CREEK')
+    load_abbr('CRSE','COURSE')
+    load_abbr('CSWY','CAUSEWAY')
+    load_abbr('CT','Court')
+    load_abbr('CT','COURT')
+    load_abbr('CTR','CENTER')
+    load_abbr('CTS','COURTS')
+    load_abbr('CV','COVE')
+    load_abbr('CYN','CANYON')
+    load_abbr('DEPT','DEPARTMENT')
+    load_abbr('DL','DALE')
+    load_abbr('DM','DAM')
+    load_abbr('DR','Drive')
+    load_abbr('DR','DRIVE')
+    load_abbr('DV','DIVIDE')
+    load_abbr('EST','ESTATE')
+    load_abbr('EXPY','EXPRESSWAY')
+    load_abbr('EXT','EXTENSION')
+    load_abbr('FL','FLOOR')
+    load_abbr('FLD','FIELD')
+    load_abbr('FLDS','FIELDS')
+    load_abbr('FLS','FALLS')
+    load_abbr('FLT','FLAT')
+    load_abbr('FRD','FORD')
+    load_abbr('FRG','FORGE')
+    load_abbr('FRK','FORK')
+    load_abbr('FRKS','FORKS')
+    load_abbr('FRNT','FRONT')
+    load_abbr('FRST','FOREST')
+    load_abbr('FRY','FERRY')
+    load_abbr('FT','FORT')
+    load_abbr('FWY','FREEWAY')
+    load_abbr('GDNS','GARDEN')
+    load_abbr('GDNS','GARDENS')
+    load_abbr('GLN','GLEN')
+    load_abbr('GRN','GREEN')
+    load_abbr('GRV','GROVE')
+    load_abbr('GTWY','GATEWAY')
+    load_abbr('HBR','HARBOR')
+    load_abbr('HL','HILL')
+    load_abbr('HLS','HILLS')
+    load_abbr('HNGR','HANGER')
+    load_abbr('HOLW','HOLLOW')
+    load_abbr('HTS','HEIGHTS')
+    load_abbr('HVN','HAVEN')
+    load_abbr('HWY','Highway')
+    load_abbr('INLT','INLET')
+    load_abbr('IS','ISLAND')
+    load_abbr('ISS','ISLANDS')
+    load_abbr('JCT','JUNCTION')
+    load_abbr('KNLS','KNOLL')
+    load_abbr('KNLS','KNOLLS')
+    load_abbr('KY','KEY')
+    load_abbr('LBBY','LOBBY')
+    load_abbr('LCKS','LOCK')
+    load_abbr('LCKS','LOCKS')
+    load_abbr('LDG','LODGE')
+    load_abbr('LF','LOAF')
+    load_abbr('LGT','LIGHT')
+    load_abbr('LK','LAKE')
+    load_abbr('LKS','LAKES')
+    load_abbr('LN','Lane')
+    load_abbr('LN','LANE')
+    load_abbr('LNDG','LANDING')
+    load_abbr('LOWR','LOWER')
+    load_abbr('MDWS','MEADOW')
+    load_abbr('MDWS','MEADOWS')
+    load_abbr('ML','MILL')
+    load_abbr('MLS','MILLS')
+    load_abbr('MNR','MANOR')
+    load_abbr('MSN','MISSION')
+    load_abbr('MT','MOUNT')
+    load_abbr('MTN','MOUNTAIN')
+    load_abbr('NCK','NECK')
+    load_abbr('OFC','OFFICE')
+    load_abbr('ORCH','ORCHARD')
+    load_abbr('PARK','Park')
+    load_abbr('PH','PENTHOUSE')
+    load_abbr('PKWY','PARKWAY')
+    load_abbr('PL','Place')
+    load_abbr('PL','PLACE')
+    load_abbr('PLN','PLAIN')
+    load_abbr('PLNS','PLAINS')
+    load_abbr('PLZ','PLAZA')
+    load_abbr('PNES','PINE')
+    load_abbr('PNES','PINES')
+    load_abbr('PR','PRAIRIE')
+    load_abbr('PRT','PORT')
+    load_abbr('PT','POINT')
+    load_abbr('RADL','RADIAL')
+    load_abbr('RD','ROAD')
+    load_abbr('RD','Road')
+    load_abbr('RDG','RIDGE')
+    load_abbr('RIV','RIVER')
+    load_abbr('RM','ROOM')
+    load_abbr('RNCH','RANCH')
+    load_abbr('RPDS','RAPID')
+    load_abbr('RPDS','RAPIDS')
+    load_abbr('RST','REST')
+    load_abbr('SHL','SHOAL')
+    load_abbr('SHLS','SHOALS')
+    load_abbr('SHR','SHORE')
+    load_abbr('SHRS','SHORES')
+    load_abbr('SMT','SUMMIT')
+    load_abbr('SPC','SPACE')
+    load_abbr('SPG','SPRING')
+    load_abbr('SPGS','SPRINGS')
+    load_abbr('SQ','Square')
+    load_abbr('SQ','SQUARE')
+    load_abbr('ST','Street')
+    load_abbr('STA','STATION')
+    load_abbr('STE','SUITE')
+    load_abbr('STR','Street')
+    load_abbr('STRA','STRAVENUE')
+    load_abbr('STRM','STREAM')
+    load_abbr('TERR','TERRACE')
+    load_abbr('TPKE','TURNPIKE')
+    load_abbr('TRAK','TRACK')
+    load_abbr('TRCE','TRACE')
+    load_abbr('TRFY','TRAFFICWAY')
+    load_abbr('TRL','TRAIL')
+    load_abbr('TRLR','TRAILER')
+    load_abbr('TUNL','TUNNEL')
+    load_abbr('UN','UNION')
+    load_abbr('UPPR','UPPER')
+    load_abbr('VIA','VIADUCT')
+    load_abbr('VIS','VISTA')
+    load_abbr('VL','VILLE')
+    load_abbr('VLG','VILLAGE')
+    load_abbr('VLY','VALLEY')
+    load_abbr('VW','VIEW')
+    load_abbr('W','WAY')
+    load_abbr('WLS','WELL')
+    load_abbr('WLS','WELLS ')
+    load_abbr('XING','CROSSING')
+    load_abbr('rd','Road')
+    load_abbr('run','RUN')
+
 
     @@codesl= Hash.new
     @@proto= LandUse.new
@@ -248,6 +273,11 @@ school
 
   def setkv(k,v)
     @attributes[k]=v
+  end 
+
+  def getkv(k
+)
+    return @attributes[k]
   end 
 
   def initialize()
@@ -380,6 +410,15 @@ class Property  < Way
   end
 
   def osmxml_way (ios)
+
+    # filter out ones with no school
+    if (@attributes.nil?)
+      return
+    end
+    if (not @attributes.include?( 'school' ))
+      return
+    end
+
     @nodes.each { |x| x.osmxml(ios) }
     ios.write("<way id=\"#{@id}\" >\n")
 
@@ -398,7 +437,7 @@ class Property  < Way
       
       abort('no address')
     end
-    paddress=@attributes["data:hadd"].capitalize()
+    paddress=@attributes["data:hadd"].capitalize() 
     paddress.gsub!("&"," and ")
     @attributes['addr:full']=paddress
 
@@ -419,7 +458,7 @@ class Property  < Way
       streettype = paddressa.pop
 
       if (!streettype.nil?)
-        print "Street type: " + streettype + ","
+        #print "Street type: " + streettype + ","
         streettypeu = streettype.upcase
         if ( @@abbr.include?(streettypeu))
           done = true
@@ -439,12 +478,13 @@ class Property  < Way
 #    paddressa.push(blocknumber)
 
     @attributes['addr:street']=paddressa.join(" ") # the rest
+    @attributes['addr:street_type']=streettype
     @attributes['addr:suite']=endings.join(" ") # the rest
     #@attributes['source']=endings.join(" ") # the rest
 
     #@attributes['addr:street'].sub("&"," and ")
-    print "house number:"+ housenumberorbearing + "\t"
-    print "address:"+ @attributes['addr:street'] + "\n"
+    #print "house number:"+ housenumberorbearing + "\t"
+    #print "address:"+ @attributes['addr:street'] + "\n"
 
 
     @attributes['addr:city']= @attributes["data:municipality"].capitalize()
@@ -516,6 +556,7 @@ class GIS
 
     if data['MUNICIPALITY'] =='LAWRENCE TWP'
       @properties.push(p)
+      return p
     end
 
   end
@@ -541,6 +582,7 @@ class GIS
       "&outSR=4326" +
       "&outFields=*" # + fieldstr 
 
+    @found=Array.new
     print "\n" + url + "\n"
     html = cache street,url
     json = JSON.parse(html)
@@ -549,7 +591,8 @@ class GIS
         json['features'].each{ |inprop|
 #          warn "found : "
 #          p inprop
-          process_prop(inprop)
+          x = process_prop(inprop)
+          @found.push(x)
         }
       else
 #        p json
@@ -558,7 +601,7 @@ class GIS
       end
       
     end
-    return p
+    return @found
   end
 
   def osmxml (ios)
@@ -598,8 +641,8 @@ class GIS
     
     if (@properties.count > 0)
       p "going to output" + x + ".osm"
-      f = File.open(x + ".osm", 'w') 
-      osmxml(f)
+      #f = File.open(x + ".osm", 'w') 
+      #osmxml(f)
       f = File.open(x + "_way.osm", 'w') 
       osmxml_way(f)
     else
@@ -639,53 +682,125 @@ ARGV.each { |x|
       print "Check1",steps,"\n"
       if (steps.length()  > 1 )
         simple = steps[0..-2].join(" ")
-        print "Check",simple,"\n"
+
+        ending = steps[-1]
+        print "Check",simple, " and ending : ", ending,"\n"
         p = g.simple(simple)       
+        if p          
+          #if False
+          p.each { |i|
+            #print "found", i, "\n"
+            if i 
+              # no turn long names into short ons
+
+              e = BaseNode.lookup_abbr(ending)
+
+              # for each house found :
+              #i.setkv('school',school)
+              # first check the ending
+              #rint i.attributes
+              e2= i.getkv('addr:street_type')
+              if e2 
+                e2 = e2.upcase
+                if e == e2 
+
+                  hn = i.getkv('addr:housenumber').to_i
+
+                  #print "found: ", ending, " with type ",  i.getkv('addr:street_type').upcase,"\n"
+                  if from == "" 
+                    #print "skip", l, "\n"
+                    #p = g.simple(street)           
+                    #i.setkv('school',school) # done
+                  else
+                    if to == "" 
+                      #print "skip", l, "\n"
+
+                    else
+                      from = from.to_i
+                      to = to.to_i
+                      
+                      if from < to 
+                        # get the
+                        if hn >= from 
+                          if hn <= to
+
+                          else
+                            print "not before to", hn, "from", to,  "\n"
+                            next
+                          end
+                        else
+                          print "not after from", hn, "from", from,  "\n"
+                          next
+                        end
+                      elsif from == to 
+                        if from > 0
+                          if from == hn 
+                            # ok
+                          else
+                            print "does not equal from/to", hn, "==", from,  "\n"
+                          end
+                        end
+                      else
+
+                        if to == 0 
+                          # we take all over the from 
+                          if hn > from 
+                            # ok
+                          else
+                            print "not after from", hn, "from", from,  "in line",l,  "\n"
+                            next
+
+                          end
+                        else
+                          # badly formatted input
+                          print "from < to", from,":", to, "in line",l,  "\n"
+                        end
+                        
+                      end
+
+
+                      ## now check even and odd                     
+                      r = (hn % 2)
+                      if r == 0
+                        if even == "even" 
+                          # ok
+                        elsif even == "odd" 
+                          print "not odd", hn, "in",l,"\n"
+                        else
+                          
+                        end
+
+                      else # the number is odd
+                        # odd
+                        if even == "odd"  # we are looking for odd
+                          # ok
+                        elsif even == "even" 
+                          print "not even", hn, "in",l,"\n"
+                          next
+                        else
+                          # empty
+                        end
+                      end                
+                  ## now check the rest 
+                      
+                      i.setkv('school',school) # done
+
+                    end
+                  end
+                  
+                end
+              end
+            end
+          }
+        else
+          print "Not found", simple, "\n"
+        end
       end
       #p = g.simple(street)           
       
-      # if False
-      #   if from == "" 
-      #     #print "skip", l, "\n"
-      #     p = g.simple(street)           
-      #   else
-      #     if to == "" 
-      #       #print "skip", l, "\n"
-      #     else
-      #       from = from.to_i
-      #       to = to.to_i
 
-      #       if from < to 
-      #         #print "Check1",even,from,to, "\n"
-              
-      #         if even == "" 
-      #           #print school, ",", street, ",ALL\n"
-      #           print "Check from ",from, "To:", to, "\n"
-      #           for n in (from .. to) do
-      #             p = g.simple(n.to_s + " " + street)   
-      #           end
-                
-      #         elsif  even == 'even'
-      #           #print "Even\n"
-      #           for n in (from .. to) do
-      #             r = (n % 2)
-      #             #print n % 2 , "\n"
-      #             if r == 0
-      #               #print school, ",", street, ",", n , "\n"           
-      #               p= g.simple(n.to_s + " " + street)   
-      #             else
-      #               #print "Odd",r, school, ",", street, ",", n , "\n"           
-      #             end
-      #           end
-      #         end
-      #       else
-      #         #print "skip", l, "\n"           
-      #       end
-      #     end
-      #   end
-      # end
       if p
-        p.setkv('school',school)
+
       end
 
     }
