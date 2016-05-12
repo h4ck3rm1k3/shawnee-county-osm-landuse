@@ -39,19 +39,21 @@ class BaseNode
 
     @@abbr= Hash.new
     @@rabbr= Hash.new
-
+    load_abbr('CANAL BASIN','CANAL BASIN')
     load_abbr('AL','Alley')
     load_abbr('ALY','ALLEY')
     load_abbr('ANX','ANNEX')
     load_abbr('APT','APARTMENT')
     load_abbr('ARC','ARCADE'  )
     load_abbr('AVE','AVENUE')
+    load_abbr('AV','AVENUE')
     load_abbr('BCH','BEACH')
     load_abbr('BG','BURG')
     load_abbr('BLDG','BUILDING')
     load_abbr('BLF','BLUFF')
     load_abbr('BLD','BOULEVARD')
-    #load_abbr('BLVD','BOULEVARD')
+    load_abbr('BLVD','BOULEVARD')
+    load_abbr('BLV','BOULEVARD')
     load_abbr('BND','BEND')
     load_abbr('BR','BRANCH')
     load_abbr('BRG','BRIDGE')
@@ -133,6 +135,7 @@ class BaseNode
     load_abbr('LK','LAKE')
     load_abbr('LKS','LAKES')
     load_abbr('LN','Lane')
+    load_abbr('La','Lane')
     load_abbr('LN','LANE')
     load_abbr('LNDG','LANDING')
     load_abbr('LOWR','LOWER')
@@ -187,6 +190,7 @@ class BaseNode
     load_abbr('STRA','STRAVENUE')
     load_abbr('STRM','STREAM')
     load_abbr('TERR','TERRACE')
+    load_abbr('TER','TERRACE')
     load_abbr('TPKE','TURNPIKE')
     load_abbr('TRAK','TRACK')
     load_abbr('TRCE','TRACE')
@@ -241,6 +245,7 @@ addr:postcode
 addr:street
 addr:housenumber
 addr:suite
+addr:full
 source
 school
 }
@@ -439,6 +444,8 @@ class Property  < Way
     end
     paddress=@attributes["data:hadd"].capitalize() 
     paddress.gsub!("&"," and ")
+    paddress.gsub!("- unit ","U-")
+    paddress.gsub!("\(rear\)"," rear")
     @attributes['addr:full']=paddress
 
     block = ""
@@ -458,19 +465,45 @@ class Property  < Way
       streettype = paddressa.pop
 
       if (!streettype.nil?)
-        #print "Street type: " + streettype + ","
+
         streettypeu = streettype.upcase
-        if ( @@abbr.include?(streettypeu))
+
+        if streettypeu == '-'
+          next
+        end
+
+        if (@@bearing.include?( streettypeu ))
+          done = false
+          @attributes['addr:bearing']=@@bearing[streettypeu]
+          paddressa.push(streettype) 
+
+        elsif (@@bearing.include?( streettypeu + "."))
+          done = false
+          @attributes['addr:bearing']=@@bearing[streettypeu]
+          paddressa.push(streettype) 
+
+        elsif ( @@abbr.include?(streettypeu))
           done = true
           @attributes['addr:street_type']=@@abbr[streettypeu]
-          @attributes['addr:street_type']=@attributes['addr:street_type']
+
+        elsif ( @@abbr.include?(streettypeu + "."))
+          done = true
+          @attributes['addr:street_type']=@@abbr[streettypeu]
+
+        elsif ( @@rabbr.include?(streettypeu))
+          done = true
+          @attributes['addr:street_type']=streettypeu
+
+        elsif ( @@rabbr.include?(streettypeu + "."))
+          done = true
+          @attributes['addr:street_type']=streettypeu
         else
+          #print 
           endings.push(streettype)          
         end
       else
         done = true
       end
-
     end
 
     paddressa.push(streettype) 
@@ -480,6 +513,11 @@ class Property  < Way
     @attributes['addr:street']=paddressa.join(" ") # the rest
     @attributes['addr:street_type']=streettype
     @attributes['addr:suite']=endings.join(" ") # the rest
+
+    if @attributes['addr:suite'] != "" 
+      print "Final Suite: " + @attributes['addr:suite'] + ": " + paddress + "\n"
+    end
+
     #@attributes['source']=endings.join(" ") # the rest
 
     #@attributes['addr:street'].sub("&"," and ")
@@ -508,7 +546,7 @@ class GIS
       Dir.mkdir(@datadir, 0700) #=> 0
     end
     if File.exists?(local_filename)
-      print "Local :"+ local_filename + "\n"
+      #print "Local :"+ local_filename + "\n"
       File.open(local_filename, "r") {|f|
         html= f.read
         return html
@@ -583,7 +621,7 @@ class GIS
       "&outFields=*" # + fieldstr 
 
     @found=Array.new
-    print "\n" + url + "\n"
+    #print "\n" + url + "\n"
     html = cache street,url
     json = JSON.parse(html)
     if json 
@@ -679,12 +717,12 @@ ARGV.each { |x|
       p = nil
 
       steps=street.split(%r{\s})
-      print "Check1",steps,"\n"
+      #print "Check1",steps,"\n"
       if (steps.length()  > 1 )
         simple = steps[0..-2].join(" ")
 
         ending = steps[-1]
-        print "Check",simple, " and ending : ", ending,"\n"
+        #print "Check",simple, " and ending : ", ending,"\n"
         p = g.simple(simple)       
         if p          
           #if False
@@ -706,6 +744,11 @@ ARGV.each { |x|
 
                   hn = i.getkv('addr:housenumber').to_i
 
+                  if hn == 0
+                    print "no number found:", hn, " from ", from, " to ", to, " line:",l , "\n"
+                    print i.attributes
+                    next
+                  end 
                   #print "found: ", ending, " with type ",  i.getkv('addr:street_type').upcase,"\n"
                   if from == "" 
                     #print "skip", l, "\n"
@@ -729,7 +772,7 @@ ARGV.each { |x|
                             next
                           end
                         else
-                          print "not after from", hn, "from", from,  "\n"
+                          print "skip too early :", hn, " cut off from", from,  "\n"
                           next
                         end
                       elsif from == to 
