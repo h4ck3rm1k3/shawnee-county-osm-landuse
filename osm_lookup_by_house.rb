@@ -807,6 +807,20 @@ class MyCallbacks < OSM::Callbacks
     end
   end
 
+  def self.match(name)
+    if @@names.include?(name)
+      @@names[new_street] = 2
+    end
+  end
+
+  def self.unmatched() 
+    @@names.each do |key, value|
+      if value == 1
+        puts "Unused: ", key
+      end
+    end
+  end
+
   def way(way)
     if not way.tags['name'].nil?
       n = way.tags['name']
@@ -1026,3 +1040,5 @@ ARGV.each { |x|
   #print "X",x, "\n"
   g.emit(x)
 }
+
+MyCallbacks.unmatched()
