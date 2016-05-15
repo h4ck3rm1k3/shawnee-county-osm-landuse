@@ -1008,11 +1008,11 @@ ARGV.each { |x|
         if found ==0
           
 
-          if MyCallbacks.include(new_street.upcase())
+          if MyCallbacks.include(new_street)
             #print "found on osm: '", street, ' ->', new_street, "\n"
           else
-            print "street: '", street, "' -> '", new_street, "' did not find any '",l,"' in mercer\n"
-            print "missing on osm: '", street, ' ->', new_street, "\n"
+            #print "street: '", street, "' -> '", new_street, "' did not find any '",l,"' in mercer\n"
+            print "missing on osm: '", new_street, ' ->', "'",l,"'\n"
           end
 
           
