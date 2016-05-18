@@ -57,7 +57,8 @@ class BaseNode
   end
 
   def self.initfields ()
-
+    @@nullobjects= Hash.new
+    @@okobjects= Hash.new
     @@abbr= Hash.new
     @@rabbr= Hash.new
     load_abbr('CANAL BASIN','CANAL BASIN')
@@ -294,10 +295,39 @@ school
 
   def setkv(k,v)
     @attributes[k]=v
+    oid = @attributes["data:objectid"]
+    @@okobjects[oid]=1
+
+    if (! @@nullobjects.include?(oid))
+      @@nullobjects.delete(oid) # mark for delete
+    end
+
   end
 
-  def getkv(k
-            )
+  def setnull(k,v)
+
+    #print "adding null: ", k
+    #print "Current: ", @attributes[k]
+    oid = @attributes["data:objectid"]
+
+    if (! @@okobjects.include?(oid))
+      @@nullobjects[oid]=self
+    end
+
+  end
+
+  def self.final_missing()
+
+    f = File.open("missing_way.osm", 'w')
+
+    # emit all null objects
+    @@nullobjects.each do |k, v|
+      v.osmxml_way(f)      
+    end
+
+  end
+
+  def getkv(k )
     return @attributes[k]
   end
 
@@ -450,7 +480,8 @@ class Property  < Way
     addrstreet=paddressa.join(" ") # the rest
     if addrstreet_type.nil? 
       print "no type", addr_full, "\n"
-      exit(0)
+      #exit(0)
+      return ""
     else
       if addrstreet_name.nil?
         print "no name ",addrstreet_name, "\n"
@@ -656,7 +687,7 @@ class GIS
     else
       print "going to open:"+ url + "\n"
       html  = open(url) {|f| f.read }
-      print "got :" + html + "\n"
+      #print "got :" + html + "\n"
       File.open(local_filename, 'w') {|f| f.write(html) }
       return html
     end
@@ -914,6 +945,8 @@ ARGV.each { |x|
                     print "no number found:", hn, " from " 
                     print from, " to ", to, " line:",l , " in:", i.getkv('addr:full'), "\n"
                     #print i.oattributes
+                    #next
+                    i.setnull('school',"NONE") # done
                     next
                   end
                   #print "found: ", ending, " with type ",
@@ -934,6 +967,7 @@ ARGV.each { |x|
                           if hn <= to
                           else
                             print "not before to", hn, "from", to,  "\n"
+                            i.setnull('school',"NONE") # done
                             next
                           end
                         else
@@ -955,6 +989,7 @@ ARGV.each { |x|
                             # ok
                           else
                             print "not after from", hn, "from", from,  "in line",l,  "\n"
+                            i.setnull('school',"NONE") # done
                             next
                           end
                         else
@@ -977,6 +1012,7 @@ ARGV.each { |x|
                           # ok
                         elsif even == "even"
                           print "not even", hn, "in",l,"\n"
+                          i.setnull('school',"NONE") # done
                           next
                         else
                           # empty
@@ -1003,6 +1039,8 @@ ARGV.each { |x|
                   i.setkv('school',school) # done
                   found = found + 1
                 else
+
+                  i.setnull('school',"NONE") # done
                   #print "skip: '", st, "' != street '",new_street.upcase
                   #print "\t"
                   #print i.getkv('addr:full') # done
