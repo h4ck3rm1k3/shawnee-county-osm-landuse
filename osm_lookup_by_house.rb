@@ -12,6 +12,7 @@ require 'OSM'
 require 'OSM/objects'
 require 'OSM/StreamParser'
 
+results= Hash.new
 
 class LandUse
   def church (obj)
@@ -32,7 +33,7 @@ class BaseNode
     elsif ( @@rabbr.include?(streettypeu + "."))
       return streettypeu
     else
-      print "unknown", streettypeu  
+      #print "unknown: ", streettypeu  
     end
   end 
 
@@ -42,17 +43,18 @@ class BaseNode
   end
 
   def self.lookup_abbr(k)
-    e = k.upcase
-    if ( @@rabbr.include?( e))
-      e = @@rabbr[e]
+    if not k.nil?
+      e = k.upcase
+      if ( @@rabbr.include?( e))
+        e = @@rabbr[e]
+      end
+      
+      if ( @@abbr.include?( e))
+        return e
+      else
+        #print "Missing", e, "\n"
+      end
     end
-
-    if ( @@abbr.include?( e))
-      return e
-    else
-      print "Missing", e, "\n"
-    end
-
 
   end
 
@@ -61,6 +63,7 @@ class BaseNode
     @@okobjects= Hash.new
     @@abbr= Hash.new
     @@rabbr= Hash.new
+    load_abbr('EXT','EXTENSION')
     load_abbr('CANAL BASIN','CANAL BASIN')
     load_abbr('AL','Alley')
     load_abbr('ALY','ALLEY')
@@ -479,7 +482,7 @@ class Property  < Way
 
     addrstreet=paddressa.join(" ") # the rest
     if addrstreet_type.nil? 
-      print "no type", addr_full, "\n"
+      #print "no type", addr_full, "\n"
       #exit(0)
       return ""
     else
@@ -685,7 +688,7 @@ class GIS
         return html
       }
     else
-      print "going to open:"+ url + "\n"
+      #print "going to open:"+ url + "\n"
       html  = open(url) {|f| f.read }
       #print "got :" + html + "\n"
       File.open(local_filename, 'w') {|f| f.write(html) }
@@ -861,9 +864,9 @@ class MyCallbacks < OSM::Callbacks
       new_street = Property.do_cleanup("1 " +n).upcase
 
       if @@names.include?(new_street)
-        print "exists '",new_street, "'\n"
+        #print "exists '",new_street, "'\n"
       else
-        print "'",new_street, "'\n"
+        #print "'",new_street, "'\n"
         @@names[new_street] = 1
         @@names[new_street.gsub!("'",'')] = 1
       end
@@ -882,11 +885,10 @@ parser = OSM::StreamParser.new(
 parser.parse
 
 
-
 ARGV.each { |x|
   File.open(x, "r") {
     |f|
-    print "read", f, "\n"
+    #print "read", f, "\n"
     data = f.read
     lines = data.split("\n")
     lines.each { |l|
@@ -899,12 +901,11 @@ ARGV.each { |x|
       p = nil
 
       if street == 'road'
-        next
-        
+        next        
       end
 
       if street == ''
-        print "What", l, "\n"        
+        #print "What", l, "\n"        
       end
 
       new_street = Property.do_cleanup("1 " +street).upcase
@@ -929,7 +930,7 @@ ARGV.each { |x|
           #if False
           p.each { |i|
             if i
-              #print "Consider", i.getkv('addr:full'), "\n"
+              #print "Consider:", i.getkv('addr:full'), " ending:",ending,"\n"
               # no turn long names into short ons
               e = BaseNode.lookup_abbr(ending)
               # for each house found :
@@ -942,8 +943,8 @@ ARGV.each { |x|
                 if e == e2
                   hn = i.getkv('addr:housenumber').to_i
                   if hn == 0
-                    print "no number found:", hn, " from " 
-                    print from, " to ", to, " line:",l , " in:", i.getkv('addr:full'), "\n"
+                    #print "no number found:", hn, " from " 
+                    #print from, " to ", to, " line:",l , " in:", i.getkv('addr:full'), "\n"
                     #print i.oattributes
                     #next
                     i.setnull('school',"NONE") # done
@@ -966,12 +967,12 @@ ARGV.each { |x|
                         if hn >= from
                           if hn <= to
                           else
-                            print "not before to", hn, "from", to,  "\n"
+                            #print "not before to", hn, "from", to,  "\n"
                             i.setnull('school',"NONE") # done
                             next
                           end
                         else
-                          print "skip too early :", hn, " cut off from", from,  "\n"
+                          #print "skip too early :", hn, " cut off from", from,  "\n"
                           next
                         end
                       elsif from == to
@@ -988,13 +989,13 @@ ARGV.each { |x|
                           if hn > from
                             # ok
                           else
-                            print "not after from", hn, "from", from,  "in line",l,  "\n"
+                            #print "not after from", hn, "from", from,  "in line",l,  "\n"
                             i.setnull('school',"NONE") # done
                             next
                           end
                         else
                           # badly formatted input
-                          print "from < to", from,":", to, "in line",l,  "\n"
+                          #print "from < to", from,":", to, "in line",l,  "\n"
                         end
                       end
                       ## now check even and odd
@@ -1003,7 +1004,7 @@ ARGV.each { |x|
                         if even == "even"
                           # ok
                         elsif even == "odd"
-                          print "not odd", hn, "in",l,"\n"
+                          #print "not odd", hn, "in",l,"\n"
                         else
                         end
                       else # the number is odd
@@ -1011,7 +1012,7 @@ ARGV.each { |x|
                         if even == "odd"  # we are looking for odd
                           # ok
                         elsif even == "even"
-                          print "not even", hn, "in",l,"\n"
+                          #print "not even", hn, "in",l,"\n"
                           i.setnull('school',"NONE") # done
                           next
                         else
@@ -1033,17 +1034,23 @@ ARGV.each { |x|
               
               else
                 st = i.getkv('addr:street').upcase + " " +i.getkv('addr:street_type').upcase # done
+                addr= i.getkv('addr:full')
                 
                 if new_street.upcase == st
                   #print "found", i.getkv('addr:street'), i.getkv('addr:street_type'), "\n"
                   i.setkv('school',school) # done
                   found = found + 1
+                  results[addr]=school
                 else
 
                   i.setnull('school',"NONE") # done
                   #print "skip: '", st, "' != street '",new_street.upcase
                   #print "\t"
-                  #print i.getkv('addr:full') # done
+
+
+                  if ( !results.include?(addr) )
+                    results[addr]="NONE"
+                  end
                   #print "\n"
                 end
                 
@@ -1054,7 +1061,7 @@ ARGV.each { |x|
 
           }
         else
-          print "Not found", simple, "\n"
+          #print "Not found", simple, "\n"
         end
 
         if found ==0
@@ -1064,7 +1071,7 @@ ARGV.each { |x|
             #print "found on osm: '", street, ' ->', new_street, "\n"
           else
             #print "street: '", street, "' -> '", new_street, "' did not find any '",l,"' in mercer\n"
-            print "missing on osm: '", new_street, ' ->', "'",l,"'\n"
+            #print "missing on osm: '", new_street, ' ->', "'",l,"'\n"
           end
 
           
@@ -1080,3 +1087,9 @@ ARGV.each { |x|
 }
 
 MyCallbacks.unmatched()
+
+# TODO : process them in order, hash by full address and overwrite the school
+# emit only one property per address.
+results.each { |k,v|
+  print k,"\t",v,"\n"
+}
