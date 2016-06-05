@@ -13,6 +13,13 @@ require 'OSM/objects'
 require 'OSM/StreamParser'
 
 results= Hash.new
+results2= Hash.new
+objects_per_oid= Hash.new
+results4= Hash.new
+
+
+results4["NO"]= Array.new
+
 
 class LandUse
   def church (obj)
@@ -286,7 +293,7 @@ school
     super   
   end
 
-  @@count=0
+  @@count= 1
 
   def attributes
     @attributes
@@ -336,8 +343,10 @@ school
 
   def initialize()
     @attributes=Hash.new
-    @@count -= 1
+    #@@count -= 1
+    @@count += 1 # for shape files
     @id=@@count
+    #print "Using ", @id, "\n" 
   end
 
   def emitkv (ios, k, v)
@@ -378,7 +387,7 @@ BaseNode.initfields
 class Node  < BaseNode
 
   def osmxml (ios)
-    ios.write("<node id=\"#{@id}\" lat=\"#{@lat}\"  lon=\"#{@lon}\" >\n" )
+    ios.write("<node version=\"1\" id=\"#{@id}\" lat=\"#{@lat}\"  lon=\"#{@lon}\" >\n" )
     super
     ios.write("</node>\n")
   end
@@ -453,7 +462,7 @@ class Property  < Way
         elsif (@@bearing.include?( streettypeu + "."))
           done = false
           addrbearing=@@bearing[streettypeu]
-          #paddressa.push(streettype)
+           #paddressa.push(streettype)
 
         elsif ( @@abbr.include?(streettypeu))
           done = true
@@ -545,14 +554,14 @@ class Property  < Way
 
     # filter out ones with no school
     if (@attributes.nil?)
-      return
+      #return
     end
     if (not @attributes.include?( 'school' ))
-      return
+      #return
     end
 
     @nodes.each { |x| x.osmxml(ios) }
-    ios.write("<way id=\"#{@id}\" >\n")
+    ios.write("<way version=\"1\" id=\"#{@id}\" >\n")
 
     emitattr(ios)
 
@@ -922,7 +931,7 @@ ARGV.each { |x|
 
         ending = BaseNode.find_ending(ending)
 
-        #print "Check: ",simple, " and ending : ", ending,"\n"
+        print "Check: ",simple, " and ending : ", ending,"\n"
 
         p = g.simple(simple)
 
@@ -930,7 +939,7 @@ ARGV.each { |x|
           #if False
           p.each { |i|
             if i
-              #print "Consider:", i.getkv('addr:full'), " ending:",ending,"\n"
+              print "Consider:", i.getkv('addr:full'), " ending:",ending,"\n"
               # no turn long names into short ons
               e = BaseNode.lookup_abbr(ending)
               # for each house found :
@@ -947,8 +956,8 @@ ARGV.each { |x|
                     #print from, " to ", to, " line:",l , " in:", i.getkv('addr:full'), "\n"
                     #print i.oattributes
                     #next
-                    i.setnull('school',"NONE") # done
-                    next
+                    i.setnull('school',"UNKNOWN") # done
+                    #next
                   end
                   #print "found: ", ending, " with type ",
                   #print            i.getkv('addr:street_type').upcase,"\n"
@@ -967,12 +976,12 @@ ARGV.each { |x|
                         if hn >= from
                           if hn <= to
                           else
-                            #print "not before to", hn, "from", to,  "\n"
+                            print "not before to", hn, "from", to,  "\n"
                             i.setnull('school',"NONE") # done
                             next
                           end
                         else
-                          #print "skip too early :", hn, " cut off from", from,  "\n"
+                          print "skip too early :", hn, " cut off from", from,  "\n"
                           next
                         end
                       elsif from == to
@@ -989,7 +998,7 @@ ARGV.each { |x|
                           if hn > from
                             # ok
                           else
-                            #print "not after from", hn, "from", from,  "in line",l,  "\n"
+                            print "not after from", hn, "from", from,  "in line",l,  "\n"
                             i.setnull('school',"NONE") # done
                             next
                           end
@@ -1012,7 +1021,7 @@ ARGV.each { |x|
                         if even == "odd"  # we are looking for odd
                           # ok
                         elsif even == "even"
-                          #print "not even", hn, "in",l,"\n"
+                          print "not even", hn, "in",l,"\n"
                           i.setnull('school',"NONE") # done
                           next
                         else
@@ -1031,65 +1040,99 @@ ARGV.each { |x|
               street2 =i.getkv('addr:street')
               street_type =i.getkv('addr:street_type')
               if street2.nil? or street2 == ""
-              
-              else
-                st = i.getkv('addr:street').upcase + " " +i.getkv('addr:street_type').upcase # done
-                addr= i.getkv('addr:full')
-                
-                if new_street.upcase == st
-                  #print "found", i.getkv('addr:street'), i.getkv('addr:street_type'), "\n"
-                  i.setkv('school',school) # done
-                  found = found + 1
-                  results[addr]=school
-                else
-
-                  i.setnull('school',"NONE") # done
-                  #print "skip: '", st, "' != street '",new_street.upcase
-                  #print "\t"
-
-
-                  if ( !results.include?(addr) )
-                    results[addr]="NONE"
-                  end
-                  #print "\n"
-                end
-                
+                #print "Street2 is null\n"
+                street2="Unknown"
               end
-              
-            end
-           
 
+              if street_type.nil? or street_type == ""
+                #print "Street2 is null\n"
+                street_type="Unknown"
+              end
+
+              st = street2.upcase + " " +street_type.upcase # done
+              addr= i.getkv('addr:full')
+              oid = i.getkv("data:objectid")
+
+              objects_per_oid[oid]=i
+              
+              # is found
+              if new_street.upcase == st
+                print "found", i.getkv('addr:street'), i.getkv('addr:street_type'), "\n"
+                i.setkv('school',school) # done
+                found = found + 1
+              else
+                school = "NO"
+                i.setnull('school',"NONE") # done
+              end                
+
+                results[addr]=school
+                results2[oid]=school
+
+              if ( !results4.include?(school) )
+                print "adding school", school, "\n"
+                results4[school]= Array.new
+              else
+                print "not adding school", school, "\n"
+              end
+              print oid,"\t", school,"\t", i,  "\n"
+              results4[school] << oid
+              
+              #print results4[school],  "\n"
+              
+              #end              
+            end
+            
           }
         else
-          #print "Not found", simple, "\n"
+          print "Not found", simple, "\n"
         end
 
         if found ==0
-          
+         
 
           if MyCallbacks.include(new_street)
-            #print "found on osm: '", street, ' ->', new_street, "\n"
+            print "found on osm: '", street, ' ->', new_street, "\n"
           else
-            #print "street: '", street, "' -> '", new_street, "' did not find any '",l,"' in mercer\n"
-            #print "missing on osm: '", new_street, ' ->', "'",l,"'\n"
+            print "street: '", street, "' -> '", new_street, "' did not find any '",l,"' in mercer\n"
+            print "missing on osm: '", new_street, ' ->', "'",l,"'\n"
           end
 
           
         else
-          #print "street", street, " found :",found, "\n"
+          print "street", street, " found :",found, "\n"
         end
       end
 
     }
   }
   #print "X",x, "\n"
-  g.emit(x)
+
 }
 
-MyCallbacks.unmatched()
+g.emit("all")
+
+# osm processing
+#MyCallbacks.unmatched()
 
 # TODO : process them in order, hash by full address and overwrite the school
 # emit only one property per address.
-results.each { |k,v|
-  print k,"\t",v,"\n"
-}
+# results.each { |k,v|
+#   print k,"\t",v,"\n"
+# }
+
+results4.each { |k,v|
+  print k, "\t",v, "\n"
+  f = File.open(k + "_way.osm", 'w')
+
+  f.write("<osm version=\"0.6\" >\n")
+
+  v.each { |i|
+    #print i
+    o1 = objects_per_oid[i]
+    o1.osmxml_way(f)    
+    print o1 , "\n"
+  }
+  f.write("</osm>\n")
+
+} 
+
