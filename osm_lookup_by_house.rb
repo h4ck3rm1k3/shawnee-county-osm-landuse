@@ -584,7 +584,9 @@ class Property  < Way
     paddress.gsub!("^\s+","")
     paddressa=paddress.split(%r{\s+})
     housenumberorbearing = paddressa.shift
-    @attributes['addr:housenumber'] =  housenumberorbearing
+    if /^\n+$/.match(housenumberorbearing)
+      @attributes['addr:housenumber'] =  housenumberorbearing
+    end
 
     #print "housenumberorbearing", housenumberorbearing, "\n"
     endings = []
