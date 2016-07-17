@@ -12,13 +12,13 @@ require 'OSM'
 require 'OSM/objects'
 require 'OSM/StreamParser'
 
-results= Hash.new
-results2= Hash.new
-objects_per_oid= Hash.new
-results4= Hash.new
+$address_to_school= Hash.new # address -> school
+$oid_to_school= Hash.new # oid -> school
+$objects_per_oid= Hash.new
+$school_oid_list= Hash.new # school -> [oid]
 
 
-results4["NO"]= Array.new
+$school_oid_list["NO"]= Array.new
 
 
 class LandUse
@@ -290,8 +290,14 @@ school
   end
 
   def initialize()
-    super   
+    @attributes=Hash.new
+    #@@count -= 1
+    @@count += 1 # for shape files
+    @id=@@count
+    #print "Using ", @id, "\n"
+        super   
   end
+
 
   @@count= 1
 
@@ -341,13 +347,6 @@ school
     return @attributes[k]
   end
 
-  def initialize()
-    @attributes=Hash.new
-    #@@count -= 1
-    @@count += 1 # for shape files
-    @id=@@count
-    #print "Using ", @id, "\n" 
-  end
 
   def emitkv (ios, k, v)
     k.sub(".","_")
@@ -435,13 +434,13 @@ class Property  < Way
     paddress.gsub!("- unit ","U-")
     paddress.gsub!("\(rear\)"," rear")
 
-    addr_full=paddress # output
+    #addr_full=paddress # output
  
-    block = ""
+    #block = ""
     paddress.gsub!("^\s+","")
     paddressa=paddress.split(%r{\s+})
-    housenumberorbearing = paddressa.shift
-    addrhousenumber =  housenumberorbearing # output
+    #housenumberorbearing = paddressa.shift
+    #addrhousenumber =  housenumberorbearing # output
     endings = []
 
     done = false
@@ -462,7 +461,7 @@ class Property  < Way
         elsif (@@bearing.include?( streettypeu + "."))
           done = false
           addrbearing=@@bearing[streettypeu]
-           #paddressa.push(streettype)
+          #paddressa.push(streettype)
 
         elsif ( @@abbr.include?(streettypeu))
           done = true
@@ -489,7 +488,7 @@ class Property  < Way
     addrstreet_name=paddressa.join(" ") # the rest
    
 
-    addrstreet=paddressa.join(" ") # the rest
+    #addrstreet=paddressa.join(" ") # the rest
     if addrstreet_type.nil? 
       #print "no type", addr_full, "\n"
       #exit(0)
@@ -505,6 +504,12 @@ class Property  < Way
 
   end
 
+  def print
+    @attributes.keys.sort.each {|y|
+      puts "\t#{y} => #{@attributes[y]}";
+    }
+  end
+         
 
   def kv (k,v)
     @attributes[k]=v
@@ -580,7 +585,7 @@ class Property  < Way
     paddress.gsub!("\(rear\)"," rear")
     @attributes['addr:full']=paddress
     #print "Cleanup",paddress,"\n"
-    block = ""
+    #block = ""
     paddress.gsub!("^\s+","")
     paddressa=paddress.split(%r{\s+})
     housenumberorbearing = paddressa.shift
@@ -611,32 +616,43 @@ class Property  < Way
           next
         end
 
-
+        skip = false
+        
+        # check if it is east weste etc
         if (@@bearing.include?( streettypeu ))
           done = false
+          skip = true
           @attributes['addr:bearing']=@@bearing[streettypeu]
           #paddressa.push(streettype)
 
         elsif (@@bearing.include?( streettypeu + "."))
           done = false
+          skip = true
           @attributes['addr:bearing']=@@bearing[streettypeu]
           #paddressa.push(streettype)
-
-        elsif ( @@abbr.include?(streettypeu))
+        end
+        
+        if ( @@abbr.include?(streettypeu))
           done = true
+          skip = true
           @attributes['addr:street_type']=@@abbr[streettypeu]          
         elsif ( @@abbr.include?(streettypeu + "."))
           done = true
+          skip = true
           @attributes['addr:street_type']=@@abbr[streettypeu]
 
         elsif ( @@rabbr.include?(streettypeu))
           done = true
+          skip = true
           @attributes['addr:street_type']=streettypeu
         elsif ( @@rabbr.include?(streettypeu + "."))
           done = true
+          skip = true
           @attributes['addr:street_type']=streettypeu
-        else
-          #print
+        end
+
+        # if none of the above matched
+        if not skip
           endings.push(streettype)
         end
 
@@ -692,7 +708,7 @@ class GIS
     if ! File.directory?(@datadir)
       Dir.mkdir(@datadir, 0700) #=> 0
     end
-    if File.exists?(local_filename)
+    if File.exist?(local_filename)
       #print "Local :"+ local_filename + "\n"
       File.open(local_filename, "r") {|f|
         html= f.read
@@ -714,7 +730,7 @@ class GIS
 
     #    p inprop
 
-    fields3 = Property::getfields()
+    #fields3 = Property::getfields()
     data= inprop['attributes']
     p = Property.new()
     #    fields3.each { |x|
@@ -722,7 +738,7 @@ class GIS
     data.keys.each { |x|
 
       val = data[x]
-      #print x,val,"\n"
+      #print "READ #{x} = #{val}\n"
       k = x.downcase
       k.sub(".","_")
       k = "data:" + k
@@ -752,8 +768,8 @@ class GIS
     end
     qry=URI::encode(street)
 
-    fields3 = Property::getfields()
-    fieldstr = CGI::escape(fields3.join(','))
+    #fields3 = Property::getfields()
+    #fieldstr = CGI::escape(fields3.join(','))
 
 
     base='http://maps.mercercounty.org/arcgis/rest/services/PIPortal/MercerPortalMap/MapServer/5/query'
@@ -808,7 +824,7 @@ class GIS
   end
 
   def process (roads )
-    found = 0
+    #found = 0
     roads.flatten.each {
       |street|
       p= lookup( street)
@@ -839,7 +855,7 @@ class GIS
 
 end
 
-g=GIS.new()
+
   
 class MyCallbacks < OSM::Callbacks
   @@names= Hash.new
@@ -872,7 +888,7 @@ class MyCallbacks < OSM::Callbacks
       n.gsub!("&amp;"," and ")
       n.gsub!("&apos;","'")
 
-      new_street = Property.do_cleanup("1 " +n).upcase
+      new_street = Property.do_cleanup("1 #{n}").upcase
 
       if @@names.include?(new_street)
         #print "exists '",new_street, "'\n"
@@ -888,253 +904,302 @@ class MyCallbacks < OSM::Callbacks
 end
 
 
+load_osm = false
+if load_osm
 cb = MyCallbacks.new
 parser = OSM::StreamParser.new(
                                :filename => ENV["HOME"] + '/experiments/school-districts/lawrence/lawrence_township.osm', 
                                :callbacks => cb
                                )
 parser.parse
+  
+end
 
+def check_even_odd(hn, even)
+  r = (hn % 2)
+  if r == 0
+    if even == "even"
+      return true
+    elsif even == "odd"
+      return false
+    else
+    end
+  else # the number is odd
+    # odd
+    if even == "odd"  # we are looking for odd
+    # ok
+    elsif even == "even"
+      return false
+    else
+      return true
+    end
+  end
+end
 
-ARGV.each { |x|
-  File.open(x, "r") {
-    |f|
-    #print "read", f, "\n"
-    data = f.read
-    lines = data.split("\n")
-    lines.each { |l|
-      cols = l.split(",")
-      school = cols[0]
-      street = cols[1]
-      from = cols[2]
-      to = cols[3]
-      even = cols[4]
-      p = nil
+def check_from_to
 
-      if street == 'road'
-        next        
+  if from == ""
+    if to == ""
+      if (check_even_odd(hn, even)) 
+        i.setkv('school',school) # done
       end
-
-      if street == ''
-        #print "What", l, "\n"        
-      end
-
-      new_street = Property.do_cleanup("1 " +street).upcase
-
-      #print "process:", l, "\n"
-      steps=street.split(%r{\s})
-      found = 0
-
-      #print "Check1",steps,"\n"
-      if (steps.length()  > 1 )
-        simple = steps[0..-2].join(" ")
-
-        ending = steps[-1]
-
-        ending = BaseNode.find_ending(ending)
-
-        print "Check: ",simple, " and ending : ", ending,"\n"
-
-        p = g.simple(simple)
-
-        if p
-          #if False
-          p.each { |i|
-            if i
-              print "Consider:", i.getkv('addr:full'), " ending:",ending,"\n"
-              # no turn long names into short ons
-              e = BaseNode.lookup_abbr(ending)
-              # for each house found :
-              #i.setkv('school',school)
-              # first check the ending
-              #rint i.attributes
-              e2= i.getkv('addr:street_type')
-              if e2
-                e2 = e2.upcase
-                if e == e2
-                  hn = i.getkv('addr:housenumber').to_i
-                  if hn == 0
-                    #print "no number found:", hn, " from " 
-                    #print from, " to ", to, " line:",l , " in:", i.getkv('addr:full'), "\n"
-                    #print i.oattributes
-                    #next
-                    i.setnull('school',"UNKNOWN") # done
-                    #next
-                  end
-                  #print "found: ", ending, " with type ",
-                  #print            i.getkv('addr:street_type').upcase,"\n"
-                  if from == ""
-                    #print "skip", l, "\n"
-                    #p = g.simple(street)
-                    #i.setkv('school',school) # done
-                  else
-                    if to == ""
-                      #print "skip", l, "\n"
-                    else
-                      from = from.to_i
-                      to = to.to_i
-                      if from < to
-                        # get the
-                        if hn >= from
-                          if hn <= to
-                          else
-                            print "not before to", hn, "from", to,  "\n"
-                            i.setnull('school',"NONE") # done
-                            next
-                          end
-                        else
-                          print "skip too early :", hn, " cut off from", from,  "\n"
-                          next
-                        end
-                      elsif from == to
-                        if from > 0
-                          if from == hn
-                            # ok
-                          else
-                            #print "does not equal from/to", hn, "==", from,  "\n"
-                          end
-                        end
-                      else
-                        if to == 0
-                          # we take all over the from
-                          if hn > from
-                            # ok
-                          else
-                            print "not after from", hn, "from", from,  "in line",l,  "\n"
-                            i.setnull('school',"NONE") # done
-                            next
-                          end
-                        else
-                          # badly formatted input
-                          #print "from < to", from,":", to, "in line",l,  "\n"
-                        end
-                      end
-                      ## now check even and odd
-                      r = (hn % 2)
-                      if r == 0
-                        if even == "even"
-                          # ok
-                        elsif even == "odd"
-                          #print "not odd", hn, "in",l,"\n"
-                        else
-                        end
-                      else # the number is odd
-                        # odd
-                        if even == "odd"  # we are looking for odd
-                          # ok
-                        elsif even == "even"
-                          print "not even", hn, "in",l,"\n"
-                          i.setnull('school',"NONE") # done
-                          next
-                        else
-                          # empty
-                        end
-                      end
-                    end # not to == ""
-                  end ## from
-                end
-                ###############
-
-
-              end
-
-## now check the rest
-              street2 =i.getkv('addr:street')
-              street_type =i.getkv('addr:street_type')
-              if street2.nil? or street2 == ""
-                #print "Street2 is null\n"
-                street2="Unknown"
-              end
-
-              if street_type.nil? or street_type == ""
-                #print "Street2 is null\n"
-                street_type="Unknown"
-              end
-
-              st = street2.upcase + " " +street_type.upcase # done
-              addr= i.getkv('addr:full')
-              oid = i.getkv("data:objectid")
-
-              objects_per_oid[oid]=i
-              
-              # is found
-              if new_street.upcase == st
-                print "found", i.getkv('addr:street'), i.getkv('addr:street_type'), "\n"
-                i.setkv('school',school) # done
-                found = found + 1
-              else
-                school = "NO"
-                i.setnull('school',"NONE") # done
-              end                
-
-                results[addr]=school
-                results2[oid]=school
-
-              if ( !results4.include?(school) )
-                print "adding school", school, "\n"
-                results4[school]= Array.new
-              else
-                print "not adding school", school, "\n"
-              end
-              print oid,"\t", school,"\t", i,  "\n"
-              results4[school] << oid
-              
-              #print results4[school],  "\n"
-              
-              #end              
-            end
-            
-          }
-        else
-          print "Not found", simple, "\n"
+    else
+      if hn <= to
+      # skip
+      else
+        if (check_even_odd(hn, even)) 
+          i.setkv('school',school) # done
         end
-
-        if found ==0
-         
-
-          if MyCallbacks.include(new_street)
-            print "found on osm: '", street, ' ->', new_street, "\n"
+      end                                              
+    end
+  else
+    if to == ""
+    #print "skip", l, "\n"
+    else
+      from = from.to_i
+      to = to.to_i
+      if from < to
+        # get the
+        if hn >= from
+          if hn <= to
           else
-            print "street: '", street, "' -> '", new_street, "' did not find any '",l,"' in mercer\n"
-            print "missing on osm: '", new_street, ' ->', "'",l,"'\n"
+            print "not before to", hn, "from", to,  "\n"
+            i.setnull('school',"NONE") # done
+            #next
           end
-
-          
         else
-          print "street", street, " found :",found, "\n"
+          print "skip too early :", hn, " cut off from", from,  "\n"
+          ##next
+        end
+      elsif from == to
+        if from > 0
+          if from == hn
+          # ok
+          else
+            #print "does not equal from/to", hn, "==", from,  "\n"
+          end
+        end
+      else
+        if to == 0
+          # we take all over the from
+          if hn > from
+          # ok
+          else
+            print "not after from", hn, "from", from,  "in line",l,  "\n"
+            i.setnull('school',"NONE") # done
+            #next
+          end
+        else
+          # badly formatted input
+          #print "from < to", from,":", to, "in line",l,  "\n"
         end
       end
+      
+      ## now check even and odd
+      if (check_even_odd(hn, even)) 
+        i.setkv('school',school) # done
+      end
 
-    }
-  }
-  #print "X",x, "\n"
+    end # not to == ""
+  end ## from
 
-}
 
-g.emit("all")
+end
 
-# osm processing
-#MyCallbacks.unmatched()
+def process_house
 
-# TODO : process them in order, hash by full address and overwrite the school
-# emit only one property per address.
-# results.each { |k,v|
-#   print k,"\t",v,"\n"
-# }
+  return if i.nil?
 
-results4.each { |k,v|
-  print k, "\t",v, "\n"
-  f = File.open(k + "_way.osm", 'w')
+  e2 = BaseNode.lookup_abbr(i.getkv('addr:street_type')).upcase
+  
+  print "Consider returned property: #{i.getkv('addr:full')} ending: #{ending} #{e} == #{e2}?\n"
+  
+  return if e != e2
+  
+  hn = i.getkv('addr:housenumber').to_i
+  if hn == 0
+    print "no number found:", hn, " from " 
+    print " line:",l , " in:", i.getkv('addr:full'), "\n"
+    i.setnull('school',"UNKNOWN") # done
+  end
+  
 
-  f.write("<osm version=\"0.6\" >\n")
+  #todo check from to
+  
+  ## now check the rest
+  street2 =i.getkv('addr:street')
+  street_type =i.getkv('addr:street_type')
+  if street2.nil? or street2 == ""
+    print "Street2 is null\n"
+    street2="Unknown"
+  end
+  
+  if street_type.nil? or street_type == ""
+    print "Street2 is null\n"
+    street_type="Unknown"
+  end
+  
+  st = "#{street2.upcase} ${street_type.upcase}"
+  addr= i.getkv('addr:full')
+  oid = i.getkv("data:objectid")
+  
+  $objects_per_oid[oid]=i
+  
+  # is found
+  if new_street.upcase == st
+    print "found", i.getkv('addr:street'), i.getkv('addr:street_type'), "\n"
+    i.setkv('school',school) # done
+    found = found + 1
+  else
+    print "bad street", i.getkv('addr:street'), i.getkv('addr:street_type'), "\n"
+    school = "NO"
+    i.setnull('school',"NONE") # done
+  end                
+  
+  $address_to_school[addr]=school
+  $oid_to_school[oid]=school
+  
+  if  !$school_oid_list.include?(school) 
+  then
+    print "adding school #{school}\n"
+    $school_oid_list[school]= Array.new
+    print "test"
+  else
+    print "not adding school", school, "\n"
+  end
+  print oid,"\t", school,"\t", i,  "\n"
+  $school_oid_list[school] << oid
+  
+  #print $school_oid_list[school],  "\n"
+  # }
+  # else
+  #   print "Not found", simple, "\n"
+  #  end
+  
+  #  if found ==0
+  
+  
+  #    if MyCallbacks.include(new_street)
+  #      print "found on osm: '", street, ' ->', new_street, "\n"
+  #    else
+  #      print "street: '", street, "' -> '", new_street, "' did not find any '",l,"' in mercer\n"
+  #      print "missing on osm: '", new_street, ' ->', "'",l,"'\n"
+  #    end
+  
+  
+  #  else
+  #    print "street", street, " found :",found, "\n"
+  #  end
+  #  end
+  
+end
 
-  v.each { |i|
-    #print i
-    o1 = objects_per_oid[i]
-    o1.osmxml_way(f)    
-    print o1 , "\n"
-  }
-  f.write("</osm>\n")
 
-} 
+def main
+  g=GIS.new()
+  
+  ARGV.each { |x|
+    File.open(x, "r") {
+      |f|
+      #print "read", f, "\n"
+      data = f.read
+      lines = data.split("\n")
+      lines.each { |l|
+        l =l.chomp
+        cols = l.split(",")
+        school = cols[0]
+        street = cols[1]
+        from = cols[2]
+        to = cols[3]
+        even = cols[4]
+        p = nil
 
+        if street == 'road' # first row is the header
+          next        
+        end
+
+        #print "Looking for #{from}-#{to} #{street} \n"
+       
+        if street == ''
+          #print "What", l, "\n"        
+        end
+
+        new_street = Property.do_cleanup("1 #{street}" ).upcase
+
+        #print "process:#{new_street}\n"
+        steps=new_street.split(%r{\s})
+        found = 0
+
+        #print "Check1",steps,"\n"
+        if (steps.length()  > 1 )
+          simple = steps[1..-2].join(" ")
+          simple = simple.chomp
+          ending = steps[-1]
+          
+          ending = BaseNode.find_ending(ending)
+          e = BaseNode.lookup_abbr(ending).upcase
+          
+          #print "Check: ",simple, " and ending : ", ending,"\n"
+
+          p = g.simple(simple)
+          
+          if p
+            #if False
+            p.each { |i|
+
+              next if i.nil?;
+              #i.print
+              #addr= i.getkv('addr:full')
+              
+              #st = i.getkv('addr:street_type')
+              #if st.nil?
+              puts i.getkv("data:hadd")
+                #exit 0
+              #end
+              #puts ("#{addr} : #{st}\n")
+              #sending = BaseNode.find_ending(st)
+              #puts ("#{st} -> #{sending}\n")
+              #se = BaseNode.lookup_abbr(sending).upcase
+                    
+              #puts "#{simple}\t#{e}\t#{se}\t#{addr}\n"
+            }
+          end
+        end
+
+      } # each line
+      
+      #print "X",x, "\n"
+      
+    } # file open 
+    
+    g.emit("all")
+    
+    # osm processing
+    #MyCallbacks.unmatched()
+    
+    # TODO : process them in order, hash by full address and overwrite the school
+    # emit only one property per address.
+    # $address_to_school.each { |k,v|
+    #   print k,"\t",v,"\n"
+    # }
+    
+    $school_oid_list.each { |k,v|
+      print k, "\t",v, "\n"
+      f = File.open(k + "_way.osm", 'w')
+      
+      f.write("<osm version=\"0.6\" >\n")
+      
+      v.each { |i2|
+        #print i
+        o1 = $objects_per_oid[i2]
+        o1.osmxml_way(f)    
+        print o1 , "\n"
+      }
+      f.write("</osm>\n")
+      
+    } # each school
+  } # ARGV
+   
+end
+
+main;
