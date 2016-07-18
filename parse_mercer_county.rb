@@ -2,9 +2,6 @@
 require 'street_address'
 
 $replace = Hash.new()
-
-
-
 def load_cleanup
 
   filename = '/home/mdupont/experiments/school-districts/lawrence/cleanup.txt'
@@ -23,6 +20,21 @@ def load_cleanup
 
 end
 
+def add_num(key,n)
+  return if key.nil?
+  #return if n.nil?
+  n = n.to_i
+  if ($address[key].has_key?(n))
+    o =$address[key][n]
+    
+    $address[key][n]=o+1
+  else
+    $address[key][n]=1
+  end
+  #puts "#{key} #{n} is now '#{$address[key][n]=1}'"
+end
+
+$address = Hash.new()
 def load_address
   
   filename = '/home/mdupont/experiments/school-districts/lawrence/all_lawrence_addresses.csv'
@@ -59,7 +71,34 @@ def load_address
         if x['street'] == ''
           puts "#{address}\t#{address}"
         else
-          puts x
+          #puts x
+          #{"number"=>"1", "prefix"=>"", "street"=>"zoar", "type"=>"st", "suffix"=>"", "city"=>"lawrence", "state"=>"nj", "zip"=>"08618"}
+          key = x['street'] + "|" + x['type']+ "|" + x['prefix']
+
+          n = x['number']
+          if ($address.has_key?(key))
+
+
+            #puts "'#{n}'"
+            g = /^\s*(\d+)\-(\d+)\s*$/.match(n)
+            if not g.nil?
+              #puts("#{g[1]} - #{g[2]}")
+              n2 = g[1].to_i
+              while n2 <= g[2].to_i do
+                add_num(key,n2)
+                n2 = n2+1
+              end
+            else
+              add_num(key,n)              
+            end
+              
+
+          else
+            $address[key]=Hash.new()
+            add_num(key,n)
+            
+          end
+
         end
       end
 
@@ -71,3 +110,18 @@ end
 load_cleanup
 #puts $replace;
 load_address
+
+#puts $address
+for s in $address.keys.sort
+
+  k = $address[s].keys
+
+  if k.nil?
+    puts "#{s};"
+  else
+    #puts "#{s} #{k}"
+    #puts "#{s}  #{k}"
+    puts "#{s}  #{k.sort.join(", ")}"
+  end
+  
+end
