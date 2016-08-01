@@ -22,7 +22,11 @@ class SchoolDistrictReader
           if from.nil?  or from == ''
             #print "skip", l, "\n"
             #print school, ",", street, ",*\n"
+
+            # we process all the data for this street
             @hm.process("9999999 #{street}",school)
+
+            
           else
             #puts "check #{l} from:'#{from}' "
             if to.nil? or to == ''
@@ -30,24 +34,29 @@ class SchoolDistrictReader
             else          
               nfrom = from.to_i
               nto = to.to_i
+              print "\"", street, "\"\n"
               if nfrom <= nto 
                 #print "Check1",even,from,to, "\n"
                 #print "Check",from..to, "\n"
                 if even.nil? or even == "" 
                   #print school, ",", street, ",ALL\n"
+
                   for n in (nfrom .. nto) do
                     #print school, ",", street, ",", n , "\n"
                     @hm.process("#{n} #{street}",school)
                   end
                   
                 elsif  even == 'even'
+                  
                   for n in (nfrom .. nto) do
                     r = (n % 2)
                     if r == 0
+
                       @hm.process("#{n} #{street}",school)
                     end
                   end
                 elsif  even == 'odd'
+
                   for n in (nfrom .. nto) do
                     r = (n % 2)
                     if r == 1

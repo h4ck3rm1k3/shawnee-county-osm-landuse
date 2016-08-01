@@ -38,9 +38,9 @@ class MercerCountyLoader
   end
 
 
-  def load_address
+  def load_address(filename)
     
-    filename = '../school-districts/Lawrence/all_lawrence_addresses.csv'
+    #filename = 
     File.open(filename, "r") {|f|
       data = f.read
       lines = data.split("\n")
@@ -134,12 +134,11 @@ class MercerCountyLoader
     end
 
   end
-  def main
+  def main(filename)
     @replace = Hash.new()
     load_cleanup
     @address = Hash.new()
-    load_address
-
+    load_address(filename)
     
   end
 
