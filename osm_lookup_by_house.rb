@@ -7,13 +7,14 @@ require 'open-uri'
 require 'facets/string/titlecase'
 # home
 $LOAD_PATH.unshift(ENV["HOME"] + "/experiments/osmlib-base/lib" ) 
-
+require 'street_address'
 require 'OSM'
 require 'OSM/objects'
 require 'OSM/StreamParser'
+require 'pry'
 
 results= Hash.new
-results2= Hash.new
+#results2= Hash.new
 objects_per_oid= Hash.new
 results4= Hash.new
 
@@ -890,7 +891,7 @@ end
 
 cb = MyCallbacks.new
 parser = OSM::StreamParser.new(
-                               :filename => ENV["HOME"] + '/experiments/school-districts/lawrence/lawrence_township.osm', 
+                               :filename => ENV["HOME"] + '/experiments/school-districts/Lawrence/lawrence-township_new-jersey.osm', 
                                :callbacks => cb
                                )
 parser.parse
@@ -905,6 +906,7 @@ ARGV.each { |x|
     lines.each { |l|
       cols = l.split(",")
       school = cols[0]
+      oschool = cols[0]
       street = cols[1]
       from = cols[2]
       to = cols[3]
@@ -919,50 +921,56 @@ ARGV.each { |x|
         #print "What", l, "\n"        
       end
 
-      new_street = Property.do_cleanup("1 " +street).upcase
-
-      #print "process:", l, "\n"
-      steps=street.split(%r{\s})
       found = 0
 
-      #print "Check1",steps,"\n"
-      if (steps.length()  > 1 )
-        simple = steps[0..-2].join(" ")
+      addr = "99999 "+street.downcase + ", lawrence, nj 08618"
+      x= StreetAddress.parse(addr)
+      if (x['street'] == '')
+        puts addr, x
+      end
+      simple = x['street'] 
+      ending = x['type']
+      n = x['number']
+      print "Check: ",simple, " and ending : ", ending,"\n"
+      st = simple
+      # lookup
+      p = g.simple(simple)
+      if p
+        p.each { |i|
+          if i
 
-        ending = steps[-1]
+            school = oschool # retore the school flag
+            addr2 = i.getkv('addr:full')
+            #hnum = i.getkv('data:hnum')
+            print "Consider:", addr2, "\n"
+            addr2 =  addr2.downcase + ", lawrence, nj 08618"
+            x2= StreetAddress.parse(addr2)
+            puts "Parsed out: #{x2}"
+            if (x2['street'] == '')
+              puts addr2, x2
+            end
+            new_street=x2['street']
+            e2= x['type']
+            house_number2= x2['number']
 
-        ending = BaseNode.find_ending(ending)
+            #binding.pry
+            if e2
 
-        print "Check: ",simple, " and ending : ", ending,"\n"
-
-        p = g.simple(simple)
-
-        if p
-          #if False
-          p.each { |i|
-            if i
-              print "Consider:", i.getkv('addr:full'), " ending:",ending,"\n"
-              # no turn long names into short ons
-              e = BaseNode.lookup_abbr(ending)
-              # for each house found :
-              #i.setkv('school',school)
-              # first check the ending
-              #rint i.attributes
-              e2= i.getkv('addr:street_type')
-              if e2
-                e2 = e2.upcase
-                if e == e2
-                  hn = i.getkv('addr:housenumber').to_i
+                if ending.upcase == e2.upcase
+                  hn = house_number2.to_i
+                  #binding.pry
+                  print from, " to ", to, " line:",l , " in:", i.getkv('addr:full'), "House Number:", hn, " Ending=",e2, "\n"
+                  
                   if hn == 0
-                    #print "no number found:", hn, " from " 
-                    #print from, " to ", to, " line:",l , " in:", i.getkv('addr:full'), "\n"
-                    #print i.oattributes
+                    print "no number found:", hn, " from " 
+
+                    print i.attributes
                     #next
                     i.setnull('school',"UNKNOWN") # done
                     #next
                   end
-                  #print "found: ", ending, " with type ",
-                  #print            i.getkv('addr:street_type').upcase,"\n"
+                  
+
                   if from == ""
                     #print "skip", l, "\n"
                     #p = g.simple(street)
@@ -978,7 +986,7 @@ ARGV.each { |x|
                         if hn >= from
                           if hn <= to
                           else
-                            print "not before to", hn, "from", to,  "\n"
+                            print "not before to:", hn, "from", to,  "\n"
                             i.setnull('school',"NONE") # done
                             next
                           end
@@ -1039,49 +1047,59 @@ ARGV.each { |x|
               end
 
 ## now check the rest
-              street2 =i.getkv('addr:street')
-              street_type =i.getkv('addr:street_type')
-              if street2.nil? or street2 == ""
-                #print "Street2 is null\n"
-                street2="Unknown"
-              end
 
-              if street_type.nil? or street_type == ""
-                #print "Street2 is null\n"
-                street_type="Unknown"
-              end
-
-              st = street2.upcase + " " +street_type.upcase # done
+              #st = street2.upcase + " " +street_type.upcase # done
               addr= i.getkv('addr:full')
               oid = i.getkv("data:objectid")
 
               objects_per_oid[oid]=i
-              
-              # is found
-              if new_street.upcase == st
-                print "found", i.getkv('addr:street'), i.getkv('addr:street_type'), "\n"
+
+              print "CHECK #{i.getkv('addr:street')} #{st} #{i.getkv('addr:street_type')}\n"
+
+              if new_street.upcase == st.upcase
+
+
                 i.setkv('school',school) # done
                 found = found + 1
+
+                print "match1 #{new_street} #{st} #{school} found:#{found}\n"
+                
               else
+                print "no match #{new_street} #{st}\n"
                 school = "NO"
                 i.setnull('school',"NONE") # done
               end                
 
-                results[addr]=school
-                results2[oid]=school
-
               if ( !results4.include?(school) )
-                print "adding school", school, "\n"
                 results4[school]= Array.new
-              else
-                print "not adding school", school, "\n"
               end
-              print oid,"\t", school,"\t", i,  "\n"
-              results4[school] << oid
+
+              # if the result exists already overwrite it if it is NO
+              if results.has_key?(addr)
+                
+                os = results[addr]
+                
+                if os == 'NO'
+                  results[addr]=school
+                  print oid,"\t", school,"\t", i,  "\n"
+                  results4[school] << oid
+
+                else
+                   puts "Not overwriting #{addr} with #{school} because #{os}"
+                end
+                
+              else
+                results[addr]=school
+
+                if school != 'NO'
+                  print oid,"\t", school,"\t", i,  "\n"
+                  results4[school] << oid
+                else
+                  print "NOT ADDING",oid,"\t", school,"\t", i,  "\n"
+                end
+              end
               
-              #print results4[school],  "\n"
-              
-              #end              
+
             end
             
           }
@@ -1092,18 +1110,17 @@ ARGV.each { |x|
         if found ==0
          
 
-          if MyCallbacks.include(new_street)
-            print "found on osm: '", street, ' ->', new_street, "\n"
-          else
-            print "street: '", street, "' -> '", new_street, "' did not find any '",l,"' in mercer\n"
-            print "missing on osm: '", new_street, ' ->', "'",l,"'\n"
-          end
+          # if MyCallbacks.include(new_street)
+          #   print "found on osm: '", street, ' ->', new_street, "\n"
+          # else
+          print "missing street: '", street, "' -> '", new_street, "' did not find any '",l,"' in mercer\n"
+        #   print "missing on osm: '", new_street, ' ->', "'",l,"'\n"
+          # end
 
           
         else
           print "street", street, " found :",found, "\n"
         end
-      end
 
     }
   }
