@@ -1,7 +1,7 @@
 export GDAL_DATA=`pwd`
-ruby osm_lookup_by_house.rb  ~/experiments/school-districts/lawrence/lawrence_schools.csv
+#ruby osm_lookup_by_house.rb  ~/experiments/school-districts/Lawrence/lawrence_schools.csv
 
-for x in *.osm;
+for x in *_way.osm;
 do echo $x;
     DIR=`basename $x _way.osm`
     mkdir $DIR

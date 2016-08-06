@@ -689,12 +689,15 @@ class GIS
   end
 
   def cache(street, url )
+    if street == ''
+      return "{}"
+    end
     local_filename=@datadir + street
     if ! File.directory?(@datadir)
       Dir.mkdir(@datadir, 0700) #=> 0
     end
     if File.exists?(local_filename)
-      #print "Local :"+ local_filename + "\n"
+      print "Local :"+ local_filename + "\n"
       File.open(local_filename, "r") {|f|
         html= f.read
         return html
@@ -1113,7 +1116,7 @@ ARGV.each { |x|
           # if MyCallbacks.include(new_street)
           #   print "found on osm: '", street, ' ->', new_street, "\n"
           # else
-          print "missing street: '", street, "' -> '", new_street, "' did not find any '",l,"' in mercer\n"
+          print "missing street: '#{street}' did not find any '#{l}' in mercer\n"
         #   print "missing on osm: '", new_street, ' ->', "'",l,"'\n"
           # end
 
