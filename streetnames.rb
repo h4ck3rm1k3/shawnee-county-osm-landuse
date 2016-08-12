@@ -35,6 +35,8 @@ class OpenStreetMap < OSM::Callbacks
 end
   
   @@names= Hash.new
+  @@houses= Hash.new
+  @@schools= Hash.new
   
   def self.include(name)
     if @@names.include?(name)
@@ -59,6 +61,9 @@ end
   end
 
   def way(way)
+    #id = way.tags['id']
+    id2 = way.id
+    
     if not way.tags['name'].nil?
       h = way.tags['highway']
       a = way.tags['access']
@@ -73,10 +78,45 @@ end
         if  ! h.nil?
           #print "'",h, " ", new_street, "'\n"
           
-          @@names[normalize(new_street)] = 1
+          @@names[normalize(new_street)] = id2          
+          @@names[new_street] = id2
+          @@names[new_street.gsub!("'",'')] = id2
+           
+        end
+      end
+      
+    end
+  end
+
+  def node(way)
+    #id = way.tags['id']
+    id2 = way.id
+
+    
+    if not way.tags['addr:street'].nil?
+      n = way.tags['addr:street']
+      c = way.tags['addr:city']
+      hn = way.tags['addr:housenumber']
+      return if c != 'Lawrence twp';
+
+      n.gsub!("&amp;"," and ")
+      n.gsub!("&apos;","'")
+      new_street = "1 #{n}"
+
+
+      if @@names.include?(new_street)
+        #print "exists '",new_street, "'\n"
+      else
+        if  ! hn.nil?
+          #print "'",h, " ", new_street, "'\n"
+          node = {
+            'id' => id2,
+            'hn' => hn
+          }
           
-          @@names[new_street] = 1
-          @@names[new_street.gsub!("'",'')] = 1
+          @@houses[normalize(new_street)] = node
+          @@houses[new_street] = node
+          @@houses[new_street.gsub!("'",'')] = node
            
         end
       end

@@ -6,7 +6,7 @@ class HouseMap
   end
 
   def addresses
-    @address.keys.sort
+    @address
   end
   
 #  def new ()
