@@ -103,24 +103,28 @@ end
       n.gsub!("&apos;","'")
       new_street = "1 #{n}"
 
-
-      if @@names.include?(new_street)
+      #puts "Test #{@@houses}"
+      
+      if @@houses.include?(new_street)
         #print "exists '",new_street, "'\n"
       else
         if  ! hn.nil?
-          #print "'",h, " ", new_street, "'\n"
-          node = {
-            'id' => id2,
-            'hn' => hn
-          }
+
+          n = normalize(new_street)
           
-          @@houses[normalize(new_street)] = node
-          @@houses[new_street] = node
-          @@houses[new_street.gsub!("'",'')] = node
+          if @@houses[n].nil?
+            
+            #@h = Hash.new
+            @@houses[n] = Hash.new
+           # @@houses[normalize(new_street)] = h
+           # @@houses[new_street.gsub!("'",'')] = h
+          end
+          hn = hn.to_s
+          #puts "Test #{@@houses[new_street]}"
+          @@houses[n][hn] = id2         
            
         end
       end
-      
     end
   end
 
@@ -147,4 +151,8 @@ end
     return @@names
     
   end
+  def houses    
+    return @@houses
+  end
+  
 end
